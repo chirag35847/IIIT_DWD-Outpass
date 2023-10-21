@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import "react-toastify/dist/ReactToastify.css";
 import { Routes, Route } from "react-router-dom";
 import NotFound from "./components/404/NotFound";
+import StudentMain from "./student";
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             </>
           }
         />
+        <Route path="/student" element={<StudentMain/>}/>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
