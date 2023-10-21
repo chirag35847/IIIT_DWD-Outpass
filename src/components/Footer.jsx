@@ -5,11 +5,10 @@ import { MdMarkEmailRead } from "react-icons/md";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-t from-black to-gray-800 text-white py-8 mt-5 ">
+    <footer className="bg-gradient-to-t from-black to-gray-800 text-white py-8">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
         <div className="mb-4 md:mb-0">
 
-          <h2 className="text-xl font-semibold mt-10">Decentra🛒Shop</h2>
           <p className="mt-2">IIIT Dharwad Campus, <br/>Ittigatti Road,Near Sattur Colony</p>
           <p> Dharwad 580009</p>
 
@@ -30,7 +29,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="text-center mt-4">
-        <p>&copy; {new Date().getFullYear()} Decentra-Shop. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} IIIT DWD. All rights reserved.</p>
       </div>
     </footer>
   );

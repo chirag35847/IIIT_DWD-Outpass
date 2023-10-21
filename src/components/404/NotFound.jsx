@@ -5,8 +5,7 @@ import { Link } from 'react-router-dom'
 const NotFound = () => {
     return (
         <>
-            <BackGradients />
-            <div className='flex flex-col h-screen justify-center items-center bg-black'>
+            <div className='w-[100vw] flex flex-col h-screen justify-center items-center bg-[#fff]/[.45]'>
                 <h1 className='m-4 text-[12rem] text-[#4f46e5] font-semibold'>Oops!</h1>
                     <h2 className='text-white font-semibold mt-[2vh] mb-[1vh]'>404 - PAGE NOT FOUND</h2>
                     <p className='text-white'>The page you are looking for might have been removed had its name changed or is temporarily unavailable</p>
