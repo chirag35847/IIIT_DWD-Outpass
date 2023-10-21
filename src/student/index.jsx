@@ -1,4 +1,4 @@
-import { Modal, Space, TextInput } from '@mantine/core';
+import { Button, FileInput, Modal, ScrollArea, Space, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import React, { useCallback, useEffect, useState } from 'react'
 import {z} from 'zod'
@@ -39,7 +39,7 @@ const StudentMain = () => {
         // const data = {
             // name : 'Chirag Mittal',
             // gender : "Male",
-            // dob : new Date('01/08/2002'),         // In this case the API should return in format DD/MM/YYYY
+            // dob : '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
             // phone : "+91-8527288876",
             // email : "20bds016@iiitdwd.ac.in",
             // fathersName : "RamKumar Mittal",
@@ -51,10 +51,10 @@ const StudentMain = () => {
             // profileImage : 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
             // residentialAddress : "Somewhere On Earth, On Some Street, At Some House",
             // bloodGroup : "O+ve",
-            // facultyAdvisorEmail : "professor@iiitdwd.ac.in",
-            // facultyAdvisorName : "Dr. Professor Prof",
-            // branch : "Data Science And AI",
-            // regNo : "20bds016"
+            // facultyAdvisorEmail : "professor@iiitdwd.ac.in",   // does not require ti be entered by student
+            // facultyAdvisorName : "Dr. Professor Prof",    // does not require ti be entered by student
+            // branch : "Data Science And AI",   // can get from email
+            // regNo : "20bds016"   // can get from email
         // }
 
         setStudentData(data);
@@ -87,10 +87,65 @@ const StudentMain = () => {
                 </div>
             </div>
             <Modal size={'xl'} className='rouneded-xl h-[80vh]' opened={opened} onClose={close} title="Add Information">
-                <form id="addStudentDetailsForm" name='addStudentDetailsForm' onSubmit={handleSubmit((e)=>{handleSendData(e)})}>
-                    <div className='flex flex-col'>
-                        <TextInput placeholder='Enter Your Name'/>
-                        <Select placeholder='Please Select Your Gender'/>
+                <form id="addStudentDetailsForm" name='addStudentDetailsForm' onSubmit={handleSubmit(console.log)}>
+                    <div className='flex flex-col p-4'>
+                        <ScrollArea h={'60vh'}>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Name</label>
+                                <TextInput placeholder='Enter Your Name' {...register('name')}/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Gender</label>
+                                <Select placeholder='Please Select Your Gender'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Date Of Birth</label>
+                                <input type='date' className='border h-9 border-[#AEAEAE] p-2 rounded' placeholder='Enter Your DOB'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Father's Name</label>
+                                <TextInput placeholder='Enter Your Fathers Name'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Mother's Name</label>
+                                <TextInput placeholder='Enter Your Mothers Name'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Father's Email</label>
+                                <TextInput placeholder='Enter Your Fathers Email'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Father's Phone</label>
+                                <TextInput placeholder='Enter Your Fathers Phone'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Mother's Email</label>
+                                <TextInput placeholder='Enter Your Mothers Email'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Mother's Phone</label>
+                                <TextInput placeholder='Enter Your Mothers Phone'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Phone Number</label>
+                                <TextInput placeholder='Enter Your Phone Number'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Profile Photo</label>
+                                <FileInput accept="image/png,image/jpeg" placeholder='Select A Profile photo for yourself'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Residential Addresses</label>
+                                <TextInput placeholder='Enter Your Residential Addresses'/>
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Blood Group</label>
+                                <TextInput placeholder='Enter Your Blood Group'/>
+                            </div>
+                        </ScrollArea>
+                        <div className='flex justify-end w-[100%] mt-5'>
+                            <Button type='submit' variant='filled' className='bg-[#2E2EFF]'>Submit</Button>
+                        </div>
                     </div>
                 </form>
             </Modal>
