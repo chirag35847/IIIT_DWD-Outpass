@@ -3,7 +3,7 @@ import { IconCircleCheckFilled, IconCircleDotted } from '@tabler/icons-react'
 import React from 'react'
 
 const CurrentOutpass = ({ activeOutpass }) => {
-    console.log(activeOutpass)
+    // console.log(activeOutpass)
     const x=""
     x.toUpperCase
     return (

@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import StudentListItem from './studentDataScroolItem';
 import { IconChevronsUpRight, IconPlus } from '@tabler/icons-react';
 import CurrentOutpass from './currentOutpass';
+import OutpassHistoryListItem from './outpassHistoryItem';
 
 const StudentMain = () => {
     const [studentData, setStudentData] = useState();
@@ -16,8 +17,10 @@ const StudentMain = () => {
     const [selectedGender, setSelectedGender] = useState();
     const [profileImageFile, setProfileImageFile] = useState();
     const [selectedBloodGroup, setSelectedBloodGroup] = useState();
-    const [activeOutpass,setActiveOutpass] = useState();
-    const [outpassHistory,setOutpassHostory] = useState();
+    const [activeOutpass, setActiveOutpass] = useState();
+    const [outpassHistory, setOutpassHostory] = useState();
+    const [openedCreateOutpass, { open:openCreateOutpass, close:closeCreateOutpass }] = useDisclosure(false);
+
     const genderOptions = [
         { value: 'Male', label: "Male" },
         { value: 'Female', label: "Female" },
@@ -51,7 +54,14 @@ const StudentMain = () => {
         residentialAddress: z.string().refine(val => val.length > 0, { message: "residentialAddress cannot be empty" }),
         bloodGroup: z.string().refine(val => val.length > 0, { message: "bloodGroup cannot be empty" }),
     });
-    console.log(activeOutpass)
+
+    const schemaNew = z.object({
+        reason:z.string().refine(val => val.length > 0, { message: "Reason Cannot Be Empty" }),
+        checkInDate:z.string().refine(val => val.length > 0, { message: "Check In Date Cannot Be Empty" }),
+        checkout:z.string().refine(val => val.length > 0, { message: "Check Out Date Cannot Be Empty" }),
+    })
+
+    const {register:registerNew,setValue:setValueNew,handleSubmit:handleSubmitNew,reset:resetNew,formState:{errors:errorsNew}} = useForm({resolver:zodResolver(schemaNew)});
     const { register, setValue, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
     const getStudentInformation = useCallback(() => {
@@ -82,40 +92,59 @@ const StudentMain = () => {
         // API to fetch current outpass if it is there
 
         const currentOutPassData = {
-            id:'123456',
-            checkoutDate:"01/08/2002",
-            checkinDate:"08/08/2002",
-            outPassType:"lessThan10",
-            fa:'done',
-            swc:'pending',
-            warden:'pending',
-            reason:"Going Home, For Family trip",
+            id: '123456',
+            checkoutDate: "01/08/2002",
+            checkinDate: "08/08/2002",
+            outPassType: "lessThan10",
+            fa: 'done',
+            swc: 'pending',
+            warden: 'pending',
+            reason: "Going Home, For Family trip",
         }
 
-        setActiveOutpass(currentOutPassData);
+        // setActiveOutpass(currentOutPassData);
 
         // api to get outpassHistory
         const outpassHistory = [
             {
-                id:'1',
-                checkoutDate:"01/08/2002",
-                checkinDate:"08/08/2002",
-                outPassType:"lessThan10",
-                reason:"Going Home, For Family trip",
+                id: '1',
+                checkoutDate: "01/08/2002",
+                checkinDate: "08/08/2002",
+                outPassType: "lessThan10",
+                reason: "Going Home, For Family trip",
+                verdict: 'rejected',
+                rejectedReason: "Incorrect details found"
             },
             {
-                id:'2',
-                checkoutDate:"01/08/2002",
-                checkinDate:"08/08/2002",
-                outPassType:"lessThan10",
-                reason:"Going Home, For Family trip",
+                id: '2',
+                checkoutDate: "01/08/2002",
+                checkinDate: "08/08/2002",
+                outPassType: "lessThan10",
+                reason: "Going Home, For Family trip",
+                verdict: 'checked-in',
+                outDate: '01/08/2002',
+                inDate: '08/08/2002',
             },
             {
-                id:'3',
-                checkoutDate:"01/08/2002",
-                checkinDate:"08/08/2002",
-                outPassType:"lessThan10",
-                reason:"Going Home, For Family trip",
+                id: '3',
+                checkoutDate: "01/08/2002",
+                checkinDate: "08/08/2002",
+                outPassType: "lessThan10",
+                reason: "Going Home, For Family trip",
+                verdict: 'checked-in',
+                outDate: '01/08/2002',
+                inDate: '08/08/2002',
+            },
+            {
+                id: '4',
+                checkoutDate: "01/08/2002",
+                checkinDate: "08/08/2002",
+                outPassType: "lessThan10",
+                reason: "Going Home, For Family trip",
+                verdict: 'rejected',
+                outDate: '01/08/2002',
+                inDate: '08/08/2002',
+                rejectedReason: "Incorrect details found"
             }
         ]
         setOutpassHostory(outpassHistory);
@@ -141,11 +170,18 @@ const StudentMain = () => {
         reset()
     }, [profileImageFile])
 
+
+    const handleNewOutpass = useCallback((data)=>{
+
+    },[])
+
     useEffect(() => {
         setValue('gender', "");
         setValue('bloodGroup', "")
         getStudentInformation();
     }, [])
+
+    // console.log(openedCreateOutpass)
 
     return (
         <>
@@ -156,7 +192,7 @@ const StudentMain = () => {
                 <div className='w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
                     <div className='flex justify-between'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Your Information</h2>
-                        <Text className='ml-3 text-black' size={20}>{`${studentData?.residentialAddress!=undefined?'Address : '+studentData.residentialAddress:""}`}</Text>
+                        <Text className='ml-3 text-black' size={20}>{`${studentData?.residentialAddress != undefined ? 'Address : ' + studentData.residentialAddress : ""}`}</Text>
                     </div>
                     <div className='flex'>
                         <Avatar size={150} radius={'100%'} src={studentData?.profileImage} alt="it's me" />
@@ -164,37 +200,37 @@ const StudentMain = () => {
                             <div className='flex p-3'>
                                 <div className='w-[25vw]'>
                                     <StudentListItem values={[
-                                        {label:"Name",value:studentData?.name},
-                                        {label:"Gender",value:studentData?.gender},
-                                        {label:"FA Name",value:studentData?.facultyAdvisorName},
-                                    ]}/>
+                                        { label: "Name", value: studentData?.name },
+                                        { label: "Gender", value: studentData?.gender },
+                                        { label: "FA Name", value: studentData?.facultyAdvisorName },
+                                    ]} />
                                 </div>
                                 <div className='w-[25vw]'>
                                     <StudentListItem values={[
-                                        {label:"Your Branch",value:studentData?.branch},
-                                        {label:"Reg No.",value:studentData?.regNo},
-                                        {label:"Facult Advisor",value:studentData?.facultyAdvisorEmail},
-                                    ]}/>
+                                        { label: "Your Branch", value: studentData?.branch },
+                                        { label: "Reg No.", value: studentData?.regNo },
+                                        { label: "Facult Advisor", value: studentData?.facultyAdvisorEmail },
+                                    ]} />
                                 </div>
                                 <div className='w-[25vw]'>
                                     <StudentListItem values={[
-                                        {label:"Phone",value:studentData?.phone},
-                                        {label:"Email",value:studentData?.email},
-                                        {label:"Father's Name",value:studentData?.fathersName},
-                                    ]}/>
+                                        { label: "Phone", value: studentData?.phone },
+                                        { label: "Email", value: studentData?.email },
+                                        { label: "Father's Name", value: studentData?.fathersName },
+                                    ]} />
                                 </div>
                                 <div className='w-[25vw]'>
                                     <StudentListItem values={[
-                                        {label:"Mother's Name",value:studentData?.mothersName},
-                                        {label:"Father's Email",value:studentData?.fathersEmail},
-                                        {label:"Father's Phone",value:studentData?.fathersPhone},
-                                    ]}/>
+                                        { label: "Mother's Name", value: studentData?.mothersName },
+                                        { label: "Father's Email", value: studentData?.fathersEmail },
+                                        { label: "Father's Phone", value: studentData?.fathersPhone },
+                                    ]} />
                                 </div>
                                 <div className='w-[25vw]'>
                                     <StudentListItem values={[
-                                        {label:"Mother's Email",value:studentData?.mothersEmail},
-                                        {label:"Mother's Phone",value:studentData?.mothersPhone},
-                                    ]}/>
+                                        { label: "Mother's Email", value: studentData?.mothersEmail },
+                                        { label: "Mother's Phone", value: studentData?.mothersPhone },
+                                    ]} />
                                 </div>
                             </div>
                         </ScrollArea>
@@ -204,25 +240,57 @@ const StudentMain = () => {
                     <div className='flex justify-between'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Active Outpass</h2>
                         {
-                            activeOutpass==undefined?
-                            <Button rightSection={<IconPlus size={14} />}>New Outpass</Button>:
-                            <Button rightSection={<IconChevronsUpRight size={14} />}>Open</Button>
+                            activeOutpass == undefined ?
+                                <Button rightSection={<IconPlus size={14} />} onClick={(e)=>openCreateOutpass()}>New Outpass</Button> :
+                                <Button rightSection={<IconChevronsUpRight size={14} />}>Open</Button>
                         }
                     </div>
                     <div className='flex justify-center items-center'>
                         {
-                            activeOutpass==undefined?
-                            <Text size={20} className='text-black'>You Don't have an active outpass</Text>:
-                            <CurrentOutpass activeOutpass={activeOutpass}/>
+                            activeOutpass == undefined ?
+                                <Text size={20} className='text-black'>You Don't have an active outpass</Text> :
+                                <CurrentOutpass activeOutpass={activeOutpass} />
                         }
                     </div>
                 </div>
                 <div className='w-[95vw] h-[32.4vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
                     <h2 className='text-[1rem] text-[#fff] font-medium'>Outpass History</h2>
-
+                    <ScrollArea h={'27vh'}>
+                        {outpassHistory != undefined &&
+                            outpassHistory.map((x, i) => {
+                                return <OutpassHistoryListItem itemData={x} key={i} />
+                            })
+                        }
+                    </ScrollArea>
                 </div>
             </div>
-            <Modal size={'xl'} className='rouneded-xl h-[80vh]' opened={opened} onClose={close} title="Add Information" closeOnClickOutside={false} withCloseButton={false}>
+            <Modal size={'xl'} className='rouneded-xl' opened={openedCreateOutpass} onClose={closeCreateOutpass} title="Add Information">
+                <form id="newOutpass" name='newOutpass' onSubmit={handleSubmitNew((data) => handleNewOutpass(data))}>
+                    <div className='flex flex-col p-4'>
+                        <ScrollArea h={'60vh'}>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Reason For Going</label>
+                                <TextInput placeholder='Reason for going out' {...registerNew('reason')} />
+                                {errorsNew?.reason?.message && <small className='inline-block text-[#ff0000]'>{errorsNew.reason.message}</small>}
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Check Out Date</label>
+                                <input type='date' className='border h-9 border-[#AEAEAE] p-2 rounded' placeholder='Enter Your Checkout Date' {...registerNew('checkout')} />
+                                {errorsNew?.checkout?.message && <small className='inline-block text-[#ff0000]'>{errorsNew.checkout.message}</small>}
+                            </div>
+                            <div className='flex flex-col mb-3'>
+                                <label className='text-[0.9rem]'>Check In Date</label>
+                                <input type='date' className='border h-9 border-[#AEAEAE] p-2 rounded' placeholder='Enter Your Checkin Date' {...registerNew('checkInDate')} />
+                                {errorsNew?.checkInDate?.message && <small className='inline-block text-[#ff0000]'>{errorsNew.checkInDate.message}</small>}
+                            </div>
+                        </ScrollArea>
+                        <div className='flex justify-end w-[100%] mt-5'>
+                            <input type="submit" className="bg-[#5C5CFF] w-full inline-block text-center p-2 text-[#fff] border border-solid border-[#43B28A] rounded-xl" value={"Add Profile"} />
+                        </div>
+                    </div>
+                </form>
+            </Modal>
+            <Modal size={'xl'} className='rouneded-xl' opened={opened} onClose={close} title="Add Information" closeOnClickOutside={false} withCloseButton={false}>
                 <form id="addStudentDetailsForm" name='addStudentDetailsForm' onSubmit={handleSubmit((data) => handleSubmitData(data))}>
                     <div className='flex flex-col p-4'>
                         <ScrollArea h={'60vh'}>
