@@ -10,14 +10,14 @@ import StudentMain from "./student";
 
 function App() {
   return (
-    <div id="app">
+    <div>
       <Routes>
         <Route
           path="/"
           exact
           element={
             <>
-              <div className="z-30 flex flex-col justify-between">
+              <div id="app" className="z-30 flex flex-col justify-between">
                 <NavBar />
                 <Home />
                 <Footer />
