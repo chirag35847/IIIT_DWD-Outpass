@@ -7,10 +7,18 @@ import { Routes, Route } from "react-router-dom";
 import NotFound from "./components/404/NotFound";
 import StudentMain from "./student";
 import FacultMain from "./faculty";
+import LandingPage from "./login/loginLanding";
+
 
 
 function App() {
+
+  
+
+
   return (
+    
+
     <div>
       <Routes>
         <Route
@@ -26,6 +34,7 @@ function App() {
             </>
           }
         />
+        <Route path="/login" element={<LandingPage/>}/>
         <Route path="/student" element={<StudentMain/>}/>
         <Route path="/faculty" element={<FacultMain/>}/>
         <Route path="*" element={<NotFound />} />
