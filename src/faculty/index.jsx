@@ -7,6 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Avatar, Button, FileInput, Modal, ScrollArea, Text, TextInput } from '@mantine/core';
 import { IconEdit, IconPlus } from '@tabler/icons-react';
 import PendingRequestModal from './pendingRequestModal';
+import RejectedRequestsModal from './rejectedRequestModal';
+import GrantedRequestsModal from './GrantedRequestModal';
+import ViewMenteeModal from './viewMenteeModal';
 
 const FacultMain = () => {
     const [facultyData, setFacultyData] = useState();
@@ -259,7 +262,7 @@ const FacultMain = () => {
                                         return (
                                             <div key={i} className='rounded-xl flex justify-between bg-[#ff0000]/[.50] w-auto h-[4.5vh] p-1 m-2'>
                                                 <Text size={15} color='black'>{x.regNo}</Text>
-                                                <Button className=''>View</Button>
+                                                <RejectedRequestsModal data={x}/>
                                             </div>
                                         )
                                     })
@@ -276,7 +279,7 @@ const FacultMain = () => {
                                         return (
                                             <div key={i} className='rounded-xl flex justify-between bg-[#0FFF50]/[.50] w-auto h-[4.5vh] p-1 m-2'>
                                                 <Text size={15} color='black'>{x.regNo}</Text>
-                                                <Button className=''>View</Button>
+                                                <GrantedRequestsModal data={x}/>
                                             </div>
                                         )
                                     })
@@ -296,7 +299,7 @@ const FacultMain = () => {
                                             <Text size={15} color='black'>{x.name}</Text>
                                             <Text size={15} color='black'>{x.regNo}</Text>
                                         </div>
-                                        <Button className=''>View</Button>
+                                        <ViewMenteeModal data={x}/>
                                     </div>
                                 )
                             })
