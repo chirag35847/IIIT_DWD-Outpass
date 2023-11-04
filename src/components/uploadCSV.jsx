@@ -1,6 +1,6 @@
 import React from 'react'
 import Papa from 'papaparse'
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import app from "../firebase"
 
 function App() {
@@ -39,21 +39,44 @@ function App() {
 
                 try {
                     const db = getFirestore(app);
-                    data.map(async x=>{
+                    data.map(async x => {
+                        // check if the current faculty exists,
+                        const facultyDocRef = doc(db,'faculty',`${x.faculty}`)
+                        const docSnap = await getDoc(facultyDocRef);
 
+                        if(docSnap.exists()){
+                            const updatedFaculty = await updateDoc(facultyDocRef,{
+                                role:x.role,
+                                mentees:x.mentees
+                            })
+                        }
+                        else{
+                            const docData = {
+                                email:x.faculty,
+                                mentees:x.mentees,
+                                role:x.role
+                            }
 
-                        const docRef = await addDoc(collection(db, "faculty"), {
-                            email:x.faculty,
-                            role:x.role,
-                            mentees:x.mentees
-                        });
+                            const createdDoc = await setDoc(facultyDocRef,docData)
+                        }
 
                         x.mentees.map(async y=>{
-                            const students = await addDoc(collection(db,'students'),{
-                                
-                            })
+                            // console.log(y)
+                            const studentDocRef = doc(db,'student',y);
+                            const studentDocSnap = await getDoc(studentDocRef);
+                            if(studentDocSnap.exists()){
+                                const updatedStudent = await updateDoc(studentDocRef,{
+                                    fa:x.faculty,
+                                })
+                            }
+                            else{
+                                const docData = {
+                                    fa:x.faculty
+                                }
+
+                                const createdDoc = await setDoc(studentDocRef,docData)
+                            }
                         })
-                        console.log("Document written with ID: ", docRef.id);
                     })
                 } catch (e) {
                     console.error("Error adding document: ", e);
