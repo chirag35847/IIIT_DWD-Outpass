@@ -3,7 +3,7 @@ import React from 'react'
 import { useEffect, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
 
-import '/home/wet_bed/code/dev/projectX-outpass/IIIT_DWD-Outpass/src/login/assets/App.css'
+import './assets/App.css'
 
 
 
@@ -19,7 +19,7 @@ export default function SignIn() {
         console.log("Encoded JWT ID TOken: " + response.credential );
         var userObj = jwtDecode(response.credential);
         setUser(userObj);
-        console.log(user);
+        console.log(userObj);
         document.getElementById("signInDiv").hidden = true;
     }
     

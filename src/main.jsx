@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "./index.css";
 import { BrowserRouter } from "react-router-dom";
+import './index.css'
 import "@rainbow-me/rainbowkit/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { GoogleOAuthProvider } from '@react-oauth/google';

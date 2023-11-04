@@ -67,27 +67,27 @@ const StudentMain = () => {
     const getStudentInformation = useCallback(() => {
         // API to return the student information
 
-        // const data = undefined
-        const data = {
-            name: 'Chirag Mittal',
-            gender: "Male",
-            dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
-            phone: "+91-8527288876",
-            email: "20bds016@iiitdwd.ac.in",
-            fathersName: "RamKumar Mittal",
-            mothersName: "Sangeeta Mittal",
-            fathersEmail: "ram801132@gmail.com",
-            fathersPhone: "+91-8011325410",
-            mothersEmail: "sangeeta@gmail.com",
-            mothersPhone: "+91-7002341587",
-            profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-            residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
-            bloodGroup: "O+ve",
-            facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
-            facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
-            branch: "Data Science And AI",   // can get from email
-            regNo: "20bds016"   // can get from email
-        }
+        const data = undefined
+        // const data = {
+        //     name: 'Chirag Mittal',
+        //     gender: "Male",
+        //     dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
+        //     phone: "+91-8527288876",
+        //     email: "20bds016@iiitdwd.ac.in",
+        //     fathersName: "RamKumar Mittal",
+        //     mothersName: "Sangeeta Mittal",
+        //     fathersEmail: "ram801132@gmail.com",
+        //     fathersPhone: "+91-8011325410",
+        //     mothersEmail: "sangeeta@gmail.com",
+        //     mothersPhone: "+91-7002341587",
+        //     profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+        //     residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
+        //     bloodGroup: "O+ve",
+        //     facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
+        //     facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
+        //     branch: "Data Science And AI",   // can get from email
+        //     regNo: "20bds016"   // can get from email
+        // }
 
         // API to fetch current outpass if it is there
 

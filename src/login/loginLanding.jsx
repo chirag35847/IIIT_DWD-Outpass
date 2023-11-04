@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import SignIn from './loginForm'
 
 
-import '/home/wet_bed/code/dev/projectX-outpass/IIIT_DWD-Outpass/src/login/assets/App.css'
+import './assets/App.css'
 
 export default function LandingPage() {
     return (
