@@ -10,6 +10,7 @@ import PendingRequestModal from './pendingRequestModal';
 import RejectedRequestsModal from './rejectedRequestModal';
 import GrantedRequestsModal from './GrantedRequestModal';
 import ViewMenteeModal from './viewMenteeModal';
+import EditInformationModal from './EditInformationModal';
 
 const FacultMain = () => {
     const [facultyData, setFacultyData] = useState();
@@ -185,7 +186,7 @@ const FacultMain = () => {
                 <div className='flex flex-col w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
                     <div className='flex justify-between'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Your Information</h2>
-                        <Button rightIcon={<IconEdit size={14} />}>Edit</Button>
+                        <EditInformationModal data={facultyData}/>
                     </div>
                     <div className='flex h-[20vh] justify-around'>
                         <Avatar size={150} radius={'100%'} src={facultyData?.profilePhoto} alt="it's me" />
