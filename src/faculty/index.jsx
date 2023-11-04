@@ -27,6 +27,7 @@ const FacultMain = () => {
     const { register, setValue, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
     const fetchFacultyData = useCallback(() => {
+        // const data = undefined;
         const data = {
             role: "SWC",
             email: "faculty@iiitdwd.ac.in",
@@ -43,6 +44,7 @@ const FacultMain = () => {
     }, [])
 
     const fetchOutPassRequests = useCallback(() => {
+        // get 3 lists for this faculty
         const granted = [
             {
                 id: "1",
@@ -154,6 +156,10 @@ const FacultMain = () => {
 
     const handleAddInformation = useCallback((data) => {
         // use data, selectedRole,selectedPhoto for saving data
+
+        console.log(data);
+        console.log(selectedPhoto)
+        console.log(selectedRole)
 
         reset();
         setSelectedRole();

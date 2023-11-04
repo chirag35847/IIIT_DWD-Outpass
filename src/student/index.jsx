@@ -10,8 +10,11 @@ import StudentListItem from './studentDataScroolItem';
 import { IconChevronsUpRight, IconPlus } from '@tabler/icons-react';
 import CurrentOutpass from './currentOutpass';
 import OutpassHistoryListItem from './outpassHistoryItem';
+import { getFirestore } from 'firebase/firestore';
+import app from "../firebase"
 
 const StudentMain = () => {
+    const db = getFirestore(app);
     const [studentData, setStudentData] = useState();
     const [opened, { open, close }] = useDisclosure(false);
     const [selectedGender, setSelectedGender] = useState();
@@ -66,31 +69,32 @@ const StudentMain = () => {
 
     const getStudentInformation = useCallback(() => {
         // API to return the student information
+        // 
 
-        const data = undefined
-        // const data = {
-        //     name: 'Chirag Mittal',
-        //     gender: "Male",
-        //     dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
-        //     phone: "+91-8527288876",
-        //     email: "20bds016@iiitdwd.ac.in",
-        //     fathersName: "RamKumar Mittal",
-        //     mothersName: "Sangeeta Mittal",
-        //     fathersEmail: "ram801132@gmail.com",
-        //     fathersPhone: "+91-8011325410",
-        //     mothersEmail: "sangeeta@gmail.com",
-        //     mothersPhone: "+91-7002341587",
-        //     profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-        //     residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
-        //     bloodGroup: "O+ve",
-        //     facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
-        //     facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
-        //     branch: "Data Science And AI",   // can get from email
-        //     regNo: "20bds016"   // can get from email
-        // }
+        // const data = undefined
+        const data = {
+            name: 'Chirag Mittal',
+            gender: "Male",
+            dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
+            phone: "+91-8527288876",
+            email: "20bds016@iiitdwd.ac.in",
+            fathersName: "RamKumar Mittal",
+            mothersName: "Sangeeta Mittal",
+            fathersEmail: "ram801132@gmail.com",
+            fathersPhone: "+91-8011325410",
+            mothersEmail: "sangeeta@gmail.com",
+            mothersPhone: "+91-7002341587",
+            profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+            residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
+            bloodGroup: "O+ve",
+            facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
+            facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
+            branch: "Data Science And AI",   // can get from email
+            regNo: "20bds016"   // can get from email
+        }
 
         // API to fetch current outpass if it is there
-
+        // 
         const currentOutPassData = {
             id: '123456',
             checkoutDate: "01/08/2002",
@@ -102,7 +106,7 @@ const StudentMain = () => {
             reason: "Going Home, For Family trip",
         }
 
-        // setActiveOutpass(currentOutPassData);
+        setActiveOutpass(currentOutPassData);
 
         // api to get outpassHistory
         const outpassHistory = [
@@ -160,11 +164,13 @@ const StudentMain = () => {
         console.log(data);
         console.log(profileImageFile)
 
+        // upload the file to cloud
+        // get the link, find the studentid in db, and update the student information
         // Do not touch anything else
         // Write the API to send the data here 
         // use data object and profileImageFile object
 
-
+        // getStudentInformation()
         setValue('gender', "");
         setValue('bloodGroup', "")
         reset()
@@ -172,7 +178,9 @@ const StudentMain = () => {
 
 
     const handleNewOutpass = useCallback((data)=>{
+        console.log(data)
 
+        // 
     },[])
 
     useEffect(() => {
