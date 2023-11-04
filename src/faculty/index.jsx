@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Avatar, Button, FileInput, Modal, ScrollArea, Text, TextInput } from '@mantine/core';
 import { IconEdit, IconPlus } from '@tabler/icons-react';
+import PendingRequestModal from './pendingRequestModal';
 
 const FacultMain = () => {
     const [facultyData, setFacultyData] = useState();
@@ -241,7 +242,7 @@ const FacultMain = () => {
                                         return (
                                             <div key={i} className='rounded-xl flex justify-between bg-[#2E2EFF]/[.50] w-auto h-[4.5vh] p-1 m-2'>
                                                 <Text size={15} color='black'>{x.regNo}</Text>
-                                                <Button className=''>View</Button>
+                                                <PendingRequestModal data={x} />
                                             </div>
                                         )
                                     })
