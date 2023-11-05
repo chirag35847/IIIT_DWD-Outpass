@@ -23,7 +23,8 @@ const PendingRequestModal = ({ outpassData , teacherRole}) => {
         setOutpass(current)
     }, [data])
 
-    const [approve,setApprove] = useState();
+    const [approve,setApprove] = useState(false);
+    const [hasClicked,setHasClicked] = useState(false);
     const schema = z.object({
         remarks: z.string().refine(val => val.length > 0, { message: "Approval Remarks Cannot Be Empty" }),
         approval: z.string().refine(val => val.length > 0, { message: "Apprval Cannot be empty" })
@@ -63,8 +64,9 @@ const PendingRequestModal = ({ outpassData , teacherRole}) => {
                                 <label className='text-[0.9rem]'>Approval</label>
                                 <div className="flex">
                                     <Checkbox
-                                        checked={approve}
+                                        checked={approve&&hasClicked}
                                         onChange={e=>{
+                                            setHasClicked(true)
                                             setValue('approval','approved')
                                             setApprove(true)
                                         }}
@@ -72,10 +74,11 @@ const PendingRequestModal = ({ outpassData , teacherRole}) => {
                                         className="mr-2"
                                     />
                                     <Checkbox
-                                        checked={!approve}
+                                        checked={!approve&&hasClicked}
                                         defaultChecked
                                         label="Reject"
                                         onChange={e=>{
+                                            setHasClicked(true)
                                             setValue('approval','rejected')
                                             setApprove(false)
                                         }}
