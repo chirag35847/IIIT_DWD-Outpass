@@ -1,5 +1,6 @@
 import { useDisclosure } from '@mantine/hooks';
 import React, { useCallback, useEffect, useState } from 'react'
+import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { z } from 'zod';
 import Select from 'react-select'
 import { useForm } from 'react-hook-form';
@@ -11,10 +12,15 @@ import RejectedRequestsModal from './rejectedRequestModal';
 import GrantedRequestsModal from './GrantedRequestModal';
 import ViewMenteeModal from './viewMenteeModal';
 import EditInformationModal from './EditInformationModal';
+import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
+import filterOutpass from './filter_outpass'
+import app from '../firebase'
+
+const storage = getStorage(app);
+const db = getFirestore(app);
 
 const FacultMain = () => {
     const [facultyData, setFacultyData] = useState();
-    const [selectedRole, setSelectedRole] = useState();
     const [selectedPhoto, setSelectedPhoto] = useState();
     const [grantedRequests, setGrantedRequests] = useState([]);
     const [rejectedRequests, setRejectedRequests] = useState([]);
@@ -26,155 +32,137 @@ const FacultMain = () => {
         { value: "Warden", label: "Warden" }
     ]
 
+    const currentFaculty = {
+        email: "chirag@iiitdwd.ac.in",
+        role: "Faculty"
+    }
+
     const schema = z.object({
         name: z.string().refine(val => val.length > 0, { message: "Name Cannot Be Empty" }),
     })
     const { register, setValue, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
-    const fetchFacultyData = useCallback(() => {
-        // const data = undefined;
+    const fetchTeacherData = async() => {
+        const docRef = doc(db, "faculty", currentFaculty.email);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            let teacher = docSnap.data()
+            return teacher
+        } else {
+            // docSnap.data() will be undefined in this case
+            console.log("No such document!");
+        }
+    }
+
+    const fetchFacultyData = useCallback((teacherData) => {
         const data = {
-            role: "SWC",
-            email: "faculty@iiitdwd.ac.in",
-            name: "Mr. Something something",
-            profilePhoto: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+            role: teacherData.role,
+            email: teacherData.email,
+            name: teacherData.name,
+            profilePhoto: teacherData.profilepic,
         }
 
         setFacultyData(data);
 
-        if (data == undefined) {
+        if (data.name == undefined) {
             open();
             console.log(opened)
         }
     }, [])
 
-    const fetchOutPassRequests = useCallback(() => {
-        // get 3 lists for this faculty
-        const granted = [
-            {
-                id: "1",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            },
-            {
-                id: "2",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            }
-        ]
+    const getOutpassData = async (outpassid) => {
+        const docRef = doc(db, "outpass", outpassid);
+        const docSnap = await getDoc(docRef);
+        let outpassData = docSnap.data();
+      
+        let data = {
+          from: outpassData.date_of_leaving,
+          to: outpassData.date_of_returning,
+          regNo: outpassData.email.substring(0,8),
+          reason: outpassData.reason,
+          id: outpassid
+        };
 
-        const pending = [
-            {
-                id: "1",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            },
-            {
-                id: "2",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            }
-        ]
+        return { data, outpassData };
+    };
 
-        const rejected = [
-            {
-                id: "1",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            },
-            {
-                id: "2",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            },
-            {
-                id: "1",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            },
-            {
-                id: "2",
-                regNo: '20BDS016',
-                from: '01/08/2023',
-                to: '10/08/2023',
-            }
-        ]
+    const fetchOutPassRequests = useCallback(async(teacherData) => {
+
+        let outpassesid = teacherData.outpasses
+        const promiseArray = outpassesid.map((outpassid) => getOutpassData(outpassid))
+        const listofOutpasses = await Promise.all(promiseArray);
+
+        const { pending, rejected, granted } = filterOutpass(listofOutpasses, currentFaculty.role);
 
         setGrantedRequests(granted);
         setPendingRequests(pending);
         setRejectedRequests(rejected);
     }, [])
 
-    const fetchMenteeList = useCallback(() => {
-        const list = [
-            {
-                id: '1',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-            {
-                id: '2',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-            {
-                id: '3',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-            {
-                id: '4',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-            {
-                id: '1',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-            {
-                id: '2',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-            {
-                id: '3',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-            {
-                id: '4',
-                name: "Student 1",
-                regNo: "ABCXYZWBC",
-            },
-        ]
+    const getStudentData = async (studentid) => {
+        const docRef = doc(db, "student", studentid);
+        const docSnap = await getDoc(docRef);
+        let studentData = docSnap.data();
+      
+        let data = {
+          name: studentData.name,
+          regNo: studentData.email.substring(0, 8),
+        };
+        return {data, studentData};
+    };
 
-        setMentees(list);
+    const fetchMenteeList = useCallback(async (teacherData) => {
+
+        let menteesid = teacherData.mentees
+        const promiseArray = menteesid.map((studentid) => getStudentData(studentid))
+        const list = await Promise.all(promiseArray);
+
+        const dataList = list.map((obj) => obj.data);
+
+        setMentees(dataList);
     }, [])
 
-    const handleAddInformation = useCallback((data) => {
-        // use data, selectedRole,selectedPhoto for saving data
+    function generateUniqueId() {
+        const timestamp = new Date().getTime(); // Get the current timestamp
+        const randomValue = Math.floor(Math.random() * 1000); // Generate a random number
+      
+        return `${timestamp}_${randomValue}`;
+    }
 
-        console.log(data);
-        console.log(selectedPhoto)
-        console.log(selectedRole)
+    const handleAddInformation = handleSubmit(async (data) => {
+        // use data, selectedRole,selectedPhoto for saving data
+        const uniqueId = generateUniqueId();
+        const mountainImagesRef = ref(storage, `facultyimages/${uniqueId}.jpg`);
+        await uploadBytes(mountainImagesRef, selectedPhoto);
+
+        const url = await getDownloadURL(ref(storage, `facultyimages/${uniqueId}.jpg`))
+        const facultyRef = doc(db, "faculty", currentFaculty.email);
+
+        await updateDoc(facultyRef, {
+            name: data.name,
+            profilepic: url
+        });
+
+        const createdData = {
+            role: currentFaculty.role,
+            email: currentFaculty.email,
+            name: data.name,
+            profilePhoto: url,
+        }
+
+        setFacultyData(createdData)
+        close()
 
         reset();
-        setSelectedRole();
         setSelectedPhoto();
-    }, [selectedRole, selectedPhoto])
+    })
 
     useEffect(() => {
-        fetchFacultyData()
-        fetchOutPassRequests()
-        fetchMenteeList()
+        fetchTeacherData().then((data) => {
+            fetchFacultyData(data)
+            fetchOutPassRequests(data)
+            fetchMenteeList(data)
+        })
     }, [])
 
     return (
@@ -245,8 +233,8 @@ const FacultMain = () => {
                                     pendingRequests.map((x, i) => {
                                         return (
                                             <div key={i} className='rounded-xl flex justify-between bg-[#2E2EFF]/[.50] w-auto h-[4.5vh] p-1 m-2'>
-                                                <Text size={15} color='black'>{x.regNo}</Text>
-                                                <PendingRequestModal data={x} />
+                                                <Text size={15} color='black'>{x.data.regNo}</Text>
+                                                <PendingRequestModal outpassData={x} teacherRole={currentFaculty.role}/>
                                             </div>
                                         )
                                     })
@@ -262,8 +250,8 @@ const FacultMain = () => {
                                     rejectedRequests.map((x, i) => {
                                         return (
                                             <div key={i} className='rounded-xl flex justify-between bg-[#ff0000]/[.50] w-auto h-[4.5vh] p-1 m-2'>
-                                                <Text size={15} color='black'>{x.regNo}</Text>
-                                                <RejectedRequestsModal data={x}/>
+                                                <Text size={15} color='black'>{x.data.regNo}</Text>
+                                                <RejectedRequestsModal outpassData={x} teacherName={facultyData.name}/>
                                             </div>
                                         )
                                     })
@@ -279,8 +267,8 @@ const FacultMain = () => {
                                     grantedRequests.map((x, i) => {
                                         return (
                                             <div key={i} className='rounded-xl flex justify-between bg-[#0FFF50]/[.50] w-auto h-[4.5vh] p-1 m-2'>
-                                                <Text size={15} color='black'>{x.regNo}</Text>
-                                                <GrantedRequestsModal data={x}/>
+                                                <Text size={15} color='black'>{x.data.regNo}</Text>
+                                                <GrantedRequestsModal outpassData={x}/>
                                             </div>
                                         )
                                     })
@@ -298,6 +286,7 @@ const FacultMain = () => {
                                     <div key={i} className='rounded-xl flex justify-between bg-[#ADD8E6] w-auto h-[4.5vh] p-1 m-2'>
                                         <div className='flex justify-between'>
                                             <Text size={15} color='black'>{x.name}</Text>
+                                            <span style={{margin: "4px"}}></span>
                                             <Text size={15} color='black'>{x.regNo}</Text>
                                         </div>
                                         <ViewMenteeModal data={x}/>
@@ -309,7 +298,7 @@ const FacultMain = () => {
                 </div>
             </div>
             <Modal opened={opened} onClose={close} title="Add Information" closeOnClickOutside={false} withCloseButton={false}>
-                <form id="addinformation" name='addinformation' onSubmit={handleSubmit((data) => handleNewOutpass(data))}>
+                <form id="addinformation" name='addinformation' onSubmit={handleSubmit(handleAddInformation)}>
                     <div className='flex flex-col p-4'>
                         <ScrollArea h={'60vh'}>
                             <div className='flex flex-col mb-3'>
@@ -319,7 +308,7 @@ const FacultMain = () => {
                             </div>
                             <div className='flex flex-col mb-3'>
                                 <label className='text-[0.9rem]'>Role</label>
-                                <Select placeholder='Select A role' options={facultyOptions} onChange={(e) => setSelectedRole(e)} value={selectedRole} />
+                                <TextInput type="text" value={currentFaculty.role} readOnly />
                             </div>
                             <div className='flex flex-col mb-3'>
                                 <label className='text-[0.9rem]'>Profile Photo</label>
@@ -327,7 +316,9 @@ const FacultMain = () => {
                             </div>
                         </ScrollArea>
                         <div className='flex justify-end w-[100%] mt-5'>
-                            <input type="submit" className="bg-[#5C5CFF] w-full inline-block text-center p-2 text-[#fff] border border-solid border-[#43B28A] rounded-xl" value={"Add Profile"} />
+                            <button type="button" className="bg-[#5C5CFF] w-full inline-block text-center p-2 text-[#fff] border border-solid border-[#43B28A] rounded-xl" onClick={handleAddInformation}>
+                                Submit
+                            </button>
                         </div>
                     </div>
                 </form>

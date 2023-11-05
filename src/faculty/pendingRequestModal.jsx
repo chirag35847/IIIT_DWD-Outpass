@@ -5,19 +5,20 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import updateOutpassStatusByRoleAndAcceptance from '../firebase-helpers/outpass_updater'
 
-const PendingRequestModal = ({ data }) => {
-    console.log(data)
+const PendingRequestModal = ({ outpassData , teacherRole}) => {
     const [opened, { open, close }] = useDisclosure(false);
     const [outpass, setOutpass] = useState();
+    
+    const data = outpassData.data
 
     const fetchCurrentOutpass = useCallback(() => {
         const current = {
-            id: data.id,
             regNo: data.regNo,
             from: format(new Date(data.from), 'do LLL, yyyy'),
             to: format(new Date(data.to), 'do LLL, yyyy'),
-            reason: "Going Home",
+            reason: data.reason,
         }
         setOutpass(current)
     }, [data])
@@ -35,8 +36,12 @@ const PendingRequestModal = ({ data }) => {
         }
     }, [opened])
 
-    const handleOutpass = useCallback((data) => {
-        console.log(data)
+    const handleOutpass = useCallback(async (thisdata) => {
+        console.log(thisdata)
+        let accept = thisdata.approval == 'approved' ? true : false;
+
+        await updateOutpassStatusByRoleAndAcceptance(teacherRole, accept, data.id, thisdata.remarks)
+        close()
     }, [])
 
     return (
