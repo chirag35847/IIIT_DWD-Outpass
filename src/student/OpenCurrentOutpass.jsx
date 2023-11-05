@@ -35,7 +35,7 @@ const OpenCurrentOutpass = ({ data }) => {
                     <label className='text-[0.9rem] mt-2'>Going Till</label>
                     <TextInput value={outPassData?.to} readOnly />
                     {
-                        !(data.fa == 'done' && data.swc == 'done' && data.warden == 'done') ?
+                        (data.fa == 'done' && data.swc == 'done' && data.warden == 'done') ?
                             <>
                                 <div className='h-auto w-auto flex flex-col justify-center items-center mt-5'>
                                     <MantineText>Request Approved, Download Outpass</MantineText>
