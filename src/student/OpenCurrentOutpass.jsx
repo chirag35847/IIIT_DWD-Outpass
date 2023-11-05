@@ -20,7 +20,7 @@ const OpenCurrentOutpass = ({ data }) => {
 
     const createAndDownloadPdf = () =>{
         console.log(outPassPdf({},{}));
-        return pdfMake.createPdf(outPassPdf({}, {}), 'Outpass').download();
+        return pdfMake.createPdf(outPassPdf(), 'Outpass').download();
     }
 
     return (
