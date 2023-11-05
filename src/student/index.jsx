@@ -1,20 +1,25 @@
 import { Avatar, Button, FileInput, Modal, ScrollArea, Space, Text, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import React, { useCallback, useEffect, useState } from 'react'
-import { z } from 'zod'
-import Select from 'react-select'
-import { useForm } from 'react-hook-form'
+import React, { useCallback, useEffect, useState } from 'react';
+import { z } from 'zod';
+import Select from 'react-select';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import StudentListItem from './studentDataScroolItem';
 import { IconChevronsUpRight, IconPlus } from '@tabler/icons-react';
 import CurrentOutpass from './currentOutpass';
 import OutpassHistoryListItem from './outpassHistoryItem';
-import { getFirestore } from 'firebase/firestore';
-import app from "../firebase"
+import { doc, setDoc, getFirestore } from "firebase/firestore"; 
+
+import { getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
+
+import app from "../firebase";
 
 const StudentMain = () => {
     const db = getFirestore(app);
+    const storage = getStorage(app);
+    // const studentCollection = db.collection('student');
     const [studentData, setStudentData] = useState();
     const [opened, { open, close }] = useDisclosure(false);
     const [selectedGender, setSelectedGender] = useState();
@@ -23,6 +28,7 @@ const StudentMain = () => {
     const [activeOutpass, setActiveOutpass] = useState();
     const [outpassHistory, setOutpassHostory] = useState();
     const [openedCreateOutpass, { open:openCreateOutpass, close:closeCreateOutpass }] = useDisclosure(false);
+
 
     const genderOptions = [
         { value: 'Male', label: "Male" },
@@ -94,17 +100,19 @@ const StudentMain = () => {
         }
 
         // API to fetch current outpass if it is there
-        // 
-        const currentOutPassData = {
-            id: '123456',
-            checkoutDate: "01/08/2002",
-            checkinDate: "08/08/2002",
-            outPassType: "lessThan10",
-            fa: 'done',
-            swc: 'pending',
-            warden: 'pending',
-            reason: "Going Home, For Family trip",
-        }
+
+        const currentOutPassData = undefined;
+        
+        // {
+        //     id: '123456',
+        //     checkoutDate: "01/08/2002",
+        //     checkinDate: "08/08/2002",
+        //     outPassType: "lessThan10",
+        //     fa: 'done',
+        //     swc: 'pending',
+        //     warden: 'pending',
+        //     reason: "Going Home, For Family trip",
+        // }
 
         setActiveOutpass(currentOutPassData);
 
@@ -159,33 +167,101 @@ const StudentMain = () => {
         }
     }, [selectedGender, profileImageFile])
 
-    const handleSubmitData = useCallback((data) => {
+    //updatedetails function
+    async function updateStudentDataByEmail(email, updatedData) {
+        try {
+            await setDoc(doc(db, "student", `${email}`), updatedData);
+        } catch (error) {
+            console.error(`Error querying Firestore: ${error}`);
+        }
+    }
+
+    const handleSubmitData = useCallback (async (data) => {
         console.log('--------');
+        data = {
+            bloodGroup: data.bloodGroup,
+            dob: data.dob,
+            email: data.email,
+            fathersEmail: data.fathersEmail,
+            fathersName: data.fathersName,
+            fathersPhone: data.fathersPhone,
+            gender: data.gender,
+            mothersEmail: data.mothersEmail,
+            mothersName: data.mothersName,
+            mothersPhone: data.mothersPhone,
+            name: data.name,
+            phone: data.phone,
+            residentialAddress: data.residentialAddress,
+
+        }
+        
+        console.log(profileImageFile);  
+        //image upload handle
+        const storageRef = ref(storage, `/profilePhotos/${data.email}`); 
+        const uploadTask = uploadBytesResumable(storageRef, profileImageFile);
+        uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+                const progress = Math.round(
+                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                );
+                console.log(progress);
+     
+                // update progress
+                // setProgresspercent(progress);
+            },
+            (err) => console.log(err),
+            () => {
+                // download url
+                getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                    
+                    data["profile_photo_URL"] = url;
+                    updateStudentDataByEmail(data.email, data);
+
+                });
+            }
+        );
+        
+
+        
+
+        
+
+        //calling function here
+        // updateStudentDataByEmail(data.email, data);
         console.log(data);
-        console.log(profileImageFile)
+
+
+        
+
+
 
         // upload the file to cloud
         // get the link, find the studentid in db, and update the student information
         // Do not touch anything else
-        // Write the API to send the data here 
+        // Write the API to send the data here
         // use data object and profileImageFile object
+        getStudentInformation()
 
-        // getStudentInformation()
         setValue('gender', "");
-        setValue('bloodGroup', "")
-        reset()
-    }, [profileImageFile])
+        setValue('bloodGroup', "");
+        reset();
+    }, [profileImageFile]);
 
 
-    const handleNewOutpass = useCallback((data)=>{
+    const handleNewOutpass = useCallback(async (data)=>{
         console.log(data)
-
+        try {
+            await setDoc(doc(db, "outpass", `${email ? email: "20bds063@iiitdwd.ac.in"}`), data);
+        } catch (error) {
+            console.error(`Error querying Firestore: ${error}`);
+        }
         // 
     },[])
 
     useEffect(() => {
         setValue('gender', "");
-        setValue('bloodGroup', "")
+        setValue('bloodGroup', "");
         getStudentInformation();
     }, [])
 
