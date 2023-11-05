@@ -2,7 +2,7 @@
 
 
 
-export const outPassPdf = (student, outpass) => {
+export const outPassPdf = () => {
 
 
     return {
