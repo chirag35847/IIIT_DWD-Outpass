@@ -42,7 +42,7 @@ const FacultMain = () => {
     })
     const { register, setValue, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
-    const fetchTeacherData = async() => {
+    const fetchTeacherData = async () => {
         const docRef = doc(db, "faculty", currentFaculty.email);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -74,19 +74,19 @@ const FacultMain = () => {
         const docRef = doc(db, "outpass", outpassid);
         const docSnap = await getDoc(docRef);
         let outpassData = docSnap.data();
-      
+
         let data = {
-          from: outpassData.date_of_leaving,
-          to: outpassData.date_of_returning,
-          regNo: outpassData.email.substring(0,8),
-          reason: outpassData.reason,
-          id: outpassid
+            from: outpassData.date_of_leaving,
+            to: outpassData.date_of_returning,
+            regNo: outpassData.email.substring(0, 8),
+            reason: outpassData.reason,
+            id: outpassid
         };
 
         return { data, outpassData };
     };
 
-    const fetchOutPassRequests = useCallback(async(teacherData) => {
+    const fetchOutPassRequests = useCallback(async (teacherData) => {
 
         let outpassesid = teacherData.outpasses
         const promiseArray = outpassesid.map((outpassid) => getOutpassData(outpassid))
@@ -103,12 +103,12 @@ const FacultMain = () => {
         const docRef = doc(db, "student", studentid);
         const docSnap = await getDoc(docRef);
         let studentData = docSnap.data();
-      
+
         let data = {
-          name: studentData.name,
-          regNo: studentData.email.substring(0, 8),
+            name: studentData.name,
+            regNo: studentData.email.substring(0, 8),
         };
-        return {data, studentData};
+        return { data, studentData };
     };
 
     const fetchMenteeList = useCallback(async (teacherData) => {
@@ -125,7 +125,7 @@ const FacultMain = () => {
     function generateUniqueId() {
         const timestamp = new Date().getTime(); // Get the current timestamp
         const randomValue = Math.floor(Math.random() * 1000); // Generate a random number
-      
+
         return `${timestamp}_${randomValue}`;
     }
 
@@ -174,127 +174,150 @@ const FacultMain = () => {
                 <div className='flex flex-col w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
                     <div className='flex justify-between'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Your Information</h2>
-                        <EditInformationModal data={facultyData}/>
+                        <EditInformationModal data={facultyData} />
                     </div>
-                    <div className='flex h-[20vh] justify-around'>
-                        <Avatar size={150} radius={'100%'} src={facultyData?.profilePhoto} alt="it's me" />
-                        <div className='flex flex-col w-[50%]'>
-                            {
-                                facultyData?.name &&
-                                <div className='rounded-xl p-2 bg-[#fff]/[.50] flex justify-between mb-3'>
-                                    <div className='w-[20%]'>
-                                        <Text size={15}>{'Name'}</Text>
+                    <ScrollArea h={'auto'}>
+                        <div className='flex h-auto justify-around'>
+                            <Avatar size={150} radius={'100%'} src={facultyData?.profilePhoto} alt="it's me" />
+                            <div className='flex flex-col w-[50%]'>
+                                {
+                                    facultyData?.name &&
+                                    <div className='rounded-xl h-[33%] p-2 bg-[#fff]/[.50] flex justify-between mb-3'>
+                                        <div className='w-[20%]'>
+                                            <Text size={15}>{'Name'}</Text>
+                                        </div>
+                                        <div className='w-[20%]'>
+                                            <Text size={15}>:</Text>
+                                        </div>
+                                        <div className='w-[60%]'>
+                                            <Text size={15}>{facultyData?.name}</Text>
+                                        </div>
                                     </div>
-                                    <div className='w-[20%]'>
-                                        <Text size={15}>:</Text>
+                                }
+                                {
+                                    facultyData?.role &&
+                                    <div className='rounded-xl h-[33%] p-2 bg-[#fff]/[.50] flex justify-between mb-3'>
+                                        <div className='w-[20%]'>
+                                            <Text size={15}>{'Role'}</Text>
+                                        </div>
+                                        <div className='w-[20%]'>
+                                            <Text size={15}>:</Text>
+                                        </div>
+                                        <div className='w-[60%]'>
+                                            <Text size={15}>{facultyData?.role}</Text>
+                                        </div>
                                     </div>
-                                    <div className='w-[60%]'>
-                                        <Text size={15}>{facultyData?.name}</Text>
+                                }
+                                {
+                                    facultyData?.email &&
+                                    <div className='rounded-xl h-[33%] p-2 bg-[#fff]/[.50] flex justify-between mb-3'>
+                                        <div className='w-[20%]'>
+                                            <Text size={15}>{'Email'}</Text>
+                                        </div>
+                                        <div className='w-[20%]'>
+                                            <Text size={15}>:</Text>
+                                        </div>
+                                        <div className='w-[60%]'>
+                                            <Text size={15}>{facultyData?.email}</Text>
+                                        </div>
                                     </div>
-                                </div>
-                            }
-                            {
-                                facultyData?.role &&
-                                <div className='rounded-xl p-2 bg-[#fff]/[.50] flex justify-between mb-3'>
-                                    <div className='w-[20%]'>
-                                        <Text size={15}>{'Role'}</Text>
-                                    </div>
-                                    <div className='w-[20%]'>
-                                        <Text size={15}>:</Text>
-                                    </div>
-                                    <div className='w-[60%]'>
-                                        <Text size={15}>{facultyData?.role}</Text>
-                                    </div>
-                                </div>
-                            }
-                            {
-                                facultyData?.email &&
-                                <div className='rounded-xl p-2 bg-[#fff]/[.50] flex justify-between mb-3'>
-                                    <div className='w-[20%]'>
-                                        <Text size={15}>{'Email'}</Text>
-                                    </div>
-                                    <div className='w-[20%]'>
-                                        <Text size={15}>:</Text>
-                                    </div>
-                                    <div className='w-[60%]'>
-                                        <Text size={15}>{facultyData?.email}</Text>
-                                    </div>
-                                </div>
-                            }
+                                }
+                            </div>
                         </div>
-                    </div>
+                    </ScrollArea>
                 </div>
                 <div className='flex justify-evenly w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
-                    <div className='w-[32%] h-auto bg-[#fff]/[.50] rounded-xl'>
-                        <div className='flex flex-col justify-between'>
-                            <Text className='text-[1rem] text-black font-medium p-2'>Pending Requests</Text>
-                            <ScrollArea w={'auto'} h={'15vh'}>
-                                {
-                                    pendingRequests.map((x, i) => {
-                                        return (
-                                            <div key={i} className='rounded-xl flex justify-between bg-[#2E2EFF]/[.50] w-auto h-[4.5vh] p-1 m-2'>
-                                                <Text size={15} color='black'>{x.data.regNo}</Text>
-                                                <PendingRequestModal outpassData={x} teacherRole={currentFaculty.role}/>
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </ScrollArea>
+                    <div className='w-[32%] h-[21vh] bg-[#fff]/[.50] rounded-xl'>
+                        <div className='h-[20%]'>
+                            <Text className='text-[1rem] text-black font-medium p-2 h-[5vh]'>Pending Requests</Text>
+                        </div>
+                        <div className='flex flex-col justify-between overflow-auto h-[75%]'>
+                            {
+                                pendingRequests.map((x, i) => {
+                                    return (
+                                        <div key={i} className='rounded-xl flex justify-between bg-[#2E2EFF]/[.50] w-auto h-[4.5vh] p-1 m-2'>
+                                            <Text size={15} color='black'>{x.data.regNo}</Text>
+                                            <PendingRequestModal outpassData={x} teacherRole={currentFaculty.role} />
+                                        </div>
+                                    )
+                                })
+                            }
+                            {
+                                pendingRequests.length == 0 &&
+                                <div className='w-auto h-[100%] flex justify-center items-center'>
+                                    <Text>No Requests</Text>
+                                </div>
+                            }
                         </div>
                     </div>
-                    <div className='w-[32%] h-auto bg-[#fff]/[.50] rounded-xl'>
-                        <div className='flex flex-col justify-between'>
+                    <div className='w-[32%] h-[21vh] bg-[#fff]/[.50] rounded-xl'>
+                        <div className='h-[20%]'>
                             <Text className='text-[1rem] text-black font-medium p-2'>Rejected Requests</Text>
-                            <ScrollArea w={'auto'} h={'15vh'}>
-                                {
-                                    rejectedRequests.map((x, i) => {
-                                        return (
-                                            <div key={i} className='rounded-xl flex justify-between bg-[#ff0000]/[.50] w-auto h-[4.5vh] p-1 m-2'>
-                                                <Text size={15} color='black'>{x.data.regNo}</Text>
-                                                <RejectedRequestsModal outpassData={x} teacherName={facultyData.name}/>
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </ScrollArea>
+                        </div>
+                        <div className='flex flex-col justify-between overflow-auto h-[75%]'>
+                            {
+                                rejectedRequests.map((x, i) => {
+                                    return (
+                                        <div key={i} className='rounded-xl flex justify-between bg-[#ff0000]/[.50] w-auto h-[4.5vh] p-1 m-2'>
+                                            <Text size={15} color='black'>{x.data.regNo}</Text>
+                                            <RejectedRequestsModal outpassData={x} teacherName={facultyData.name} />
+                                        </div>
+                                    )
+                                })
+                            }
+                            {
+                                rejectedRequests.length == 0 &&
+                                <div className='w-auto h-[100%] flex justify-center items-center'>
+                                    <Text>No Requests</Text>
+                                </div>
+                            }
                         </div>
                     </div>
-                    <div className='w-[32%] h-auto bg-[#fff]/[.50] rounded-xl'>
-                        <div className='flex flex-col justify-between'>
+                    <div className='w-[32%] h-[21vh] bg-[#fff]/[.50] rounded-xl'>
+                        <div className='h-[20%]'>
                             <Text className='text-[1rem] text-black font-medium p-2'>Granted Requests</Text>
-                            <ScrollArea w={'auto'} h={'15vh'}>
-                                {
-                                    grantedRequests.map((x, i) => {
-                                        return (
-                                            <div key={i} className='rounded-xl flex justify-between bg-[#0FFF50]/[.50] w-auto h-[4.5vh] p-1 m-2'>
-                                                <Text size={15} color='black'>{x.data.regNo}</Text>
-                                                <GrantedRequestsModal outpassData={x}/>
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </ScrollArea>
+                        </div>
+                        <div className='flex flex-col justify-between overflow-auto h-[75%]'>
+                            {
+                                grantedRequests.map((x, i) => {
+                                    return (
+                                        <div key={i} className='rounded-xl flex justify-between bg-[#0FFF50]/[.50] w-auto h-[4.5vh] p-1 m-2'>
+                                            <Text size={15} color='black'>{x.data.regNo}</Text>
+                                            <GrantedRequestsModal outpassData={x} />
+                                        </div>
+                                    )
+                                })
+                            }
+                            {
+                                grantedRequests.length == 0 &&
+                                <div className='w-auto h-[100%] flex justify-center items-center'>
+                                    <Text>No Requests</Text>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
                 <div className='w-[95vw] h-[32.4vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
-                    <h2 className='text-[1rem] text-[#fff] font-medium'>Your Mentees</h2>
-                    <ScrollArea w={'auto'} h={'26vh'}>
+                    <div className='h-[12%]'>
+                        <h2 className='text-[1rem] text-[#fff] font-medium'>Your Mentees</h2>
+                    </div>
+                    <div className='flex flex-col justify-between overflow-auto h-[82%]'>
                         {
                             mentees.map((x, i) => {
                                 return (
                                     <div key={i} className='rounded-xl flex justify-between bg-[#ADD8E6] w-auto h-[4.5vh] p-1 m-2'>
                                         <div className='flex justify-between'>
                                             <Text size={15} color='black'>{x.name}</Text>
-                                            <span style={{margin: "4px"}}></span>
+                                            <span style={{ margin: "4px" }}></span>
                                             <Text size={15} color='black'>{x.regNo}</Text>
                                         </div>
-                                        <ViewMenteeModal data={x}/>
+                                        <ViewMenteeModal data={x} />
                                     </div>
                                 )
                             })
                         }
-                    </ScrollArea>
+                    </div>
+                    {/* </ScrollArea> */}
                 </div>
             </div>
             <Modal opened={opened} onClose={close} title="Add Information" closeOnClickOutside={false} withCloseButton={false}>
