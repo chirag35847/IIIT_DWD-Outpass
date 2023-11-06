@@ -75,6 +75,9 @@ const StudentMain = () => {
     const {register:registerNew,setValue:setValueNew,handleSubmit:handleSubmitNew,reset:resetNew,formState:{errors:errorsNew}} = useForm({resolver:zodResolver(schemaNew)});
     const { register, setValue, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
+    
+    
+
     const getStudentInformation = useCallback(() => {
         // API to return the student information
         // 
@@ -102,8 +105,8 @@ const StudentMain = () => {
         }
 
         // API to fetch current outpass if it is there
-
-        const currentOutPassData = undefined;
+        
+        
         
         // {
         //     id: '123456',
@@ -116,7 +119,6 @@ const StudentMain = () => {
         //     reason: "Going Home, For Family trip",
         // }
 
-        setActiveOutpass(currentOutPassData);
 
         // api to get outpassHistory
         const outpassHistory = [
@@ -162,6 +164,7 @@ const StudentMain = () => {
             }
         ]
         setOutpassHostory(outpassHistory);
+        
 
         setStudentData(data);
         if (data == undefined || data?.name == undefined) {
@@ -232,6 +235,8 @@ const StudentMain = () => {
         setValue('bloodGroup', "");
         reset();
     }, [profileImageFile]);
+
+
     
     function getDaysBetweenDates(date1, date2) {
         const firstDate = new Date(date1);
@@ -252,7 +257,7 @@ const StudentMain = () => {
         // Check if the document exists
         // get outPassdata
         // data comes in docSnapshot.data()
-        const docSnapshot = await getDoc(userRef, 'student', email) ;
+        const docSnapshot = await getDoc(userRef, 'student', email);
       
         if (docSnapshot==="undefined") {
           // If the document doesn't exist, create it with initial values
@@ -316,14 +321,29 @@ const StudentMain = () => {
         
         // 
     },[])
+    async function getOutpassDetails(data){
+        const studentRef = doc(db, "student", data.email);
+        const docSnapshot = await getDoc(studentRef, 'student', data.email);
+        const studentdata = docSnapshot.data();
+
+        const outpassRef = doc(db, "outpass", studentdata.current_outpass);
+        const outpassDoc = await getDoc(outpassRef, 'outpass', studentdata.current_outpass);
+        const currentOutPassData = outpassDoc.data();
+        setActiveOutpass(currentOutPassData);
+
+    }
 
     useEffect(() => {
         setValue('gender', "");
         setValue('bloodGroup', "");
         getStudentInformation();
+        getOutpassDetails(studentData);
+        
     }, [])
 
     // console.log(openedCreateOutpass)
+
+    
 
     return (
         <>
