@@ -1,5 +1,67 @@
 import React, { useState } from 'react';
 import COVERIMAGE from './2021-07-27.jpg';
+import outpassListData from '../constants/fakeOutpass'
+import { getFirestore, collection, doc, updateDoc, getDocs, addDoc, writeBatch} from "firebase/firestore";
+import app from '../firebase'
+import emailjs from '@emailjs/browser'
+
+const db = getFirestore(app);
+
+const updateOutpassesWithDates = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "outpass"));
+
+    const updates = [];
+
+    querySnapshot.forEach((doc) => {
+      const outpass = doc.data();
+      const { outpass_size } = outpass;
+
+      // Calculate dates based on outpass_size
+      const today = new Date();
+      let dateOfLeaving = new Date(today);
+      let dateOfReturning = new Date(today);
+
+      if (outpass_size) {
+        dateOfLeaving.setDate(today.getDate() + 11);
+        dateOfReturning.setDate(today.getDate() + 25);
+      } else {
+        dateOfLeaving.setDate(today.getDate() + 2);
+        dateOfReturning.setDate(today.getDate() + 5);
+      }
+
+      // Format dates as MM/DD/YYYY
+      const formattedDateOfLeaving = `${dateOfLeaving.getMonth() + 1}/${dateOfLeaving.getDate()}/${dateOfLeaving.getFullYear()}`;
+      const formattedDateOfReturning = `${dateOfReturning.getMonth() + 1}/${dateOfReturning.getDate()}/${dateOfReturning.getFullYear()}`;
+
+      // Add updates to the batch
+      updates.push({
+        id: doc.id,
+        date_of_leaving: formattedDateOfLeaving,
+        date_of_returning: formattedDateOfReturning,
+      });
+    });
+
+    // Create a batch to update all documents
+    const batch = writeBatch(db);
+
+    for (const update of updates) {
+      const docRef = doc(collection(db, "outpass"), update.id);
+      batch.update(docRef, {
+        date_of_leaving: update.date_of_leaving,
+        date_of_returning: update.date_of_returning,
+      });
+    }
+
+    // Commit the batch to update all documents
+    await batch.commit();
+
+    console.log("Outpasses updated with date_of_leaving and date_of_returning fields.");
+  } catch (error) {
+    console.error("Error updating outpasses: ", error);
+  }
+};
+
 
 const colors = {
   primary: "#060606",
@@ -25,8 +87,43 @@ function LoginForm() {
   const [showOTPInput, setShowOTPInput] = useState(false);
   const [otp, setOTP] = useState(['', '', '', '']);
 
-  const handleEmailSubmit = () => {
+  const generateOTP = () => {
+    const min = 1000; // Minimum 4-digit number
+    const max = 9999; // Maximum 4-digit number
+    const otp = Math.floor(Math.random() * (max - min + 1)) + min;
+    return otp;
+  };
+
+  const handleEmailSubmit = async () => {
     if (email.endsWith('iiitdwd.ac.in')) {
+      const serviceId = 'service_ia31v4m';
+      const templateId = 'template_tzfu265';
+      const userId = 'nCJm866AKCN_Onjn-';
+
+      //from = user_name, user_email, message, subject
+      const otp = generateOTP();
+      let form = {
+        user_name: "Aniket",
+        user_email: email,
+        message: `<p>Your OTP is <strong>${otp}</strong>.</p>`,
+        subject: "Here is your OTP"
+      }
+
+      const sendEmail = (form) => {
+        return new Promise((resolve, reject) => {
+          emailjs.sendForm(serviceId, templateId, form, userId)
+            .then((result) => {
+              console.log(result.text);
+              resolve(result.text);
+            })
+            .catch((error) => {
+              console.log(error.text);
+              reject(error.text);
+          });
+        });
+      };
+
+      await sendEmail(form);
       setShowOTPInput(true);
     } else {
       alert('Invalid email domain. Use an iiitdwd.ac.in email.');
@@ -39,13 +136,27 @@ function LoginForm() {
     setOTP(updatedOTP);
   };
 
-  const handleLogin = () => {
+  const uploadOutpassesToFirestore = async (outpassList) => {
+    try {
+      for (const outpass of outpassList) {
+        const docRef = await addDoc(collection(db, "outpass"), outpass);
+        console.log("Document written with ID: ", docRef.id);
+      }
+      console.log("All outpasses uploaded to Firestore successfully.");
+    } catch (error) {
+      console.error("Error uploading outpasses to Firestore: ", error);
+    }
+  };
+
+  const handleLogin = async () => {
     const enteredOTP = otp.join('');
     if (enteredOTP === '1234') {
       alert('Login successful!'); // Replace with your actual login logic
     } else {
       alert('Invalid OTP. Please try again.');
     }
+
+    updateOutpassesWithDates();
   };
 
   return (

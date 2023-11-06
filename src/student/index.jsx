@@ -16,6 +16,7 @@ import { doc, getDoc, setDoc, getFirestore, collection, addDoc, updateDoc, array
 import { getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
 
 import app from "../firebase";
+import OpenCurrentOutpass from './OpenCurrentOutpass';
 
 const StudentMain = () => {
     const db = getFirestore(app);
@@ -330,51 +331,53 @@ const StudentMain = () => {
                 <div className='w-[95vw] h-[8vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[3vh] rounded-xl flex justify-center items-center'>
                     <h2 className='text-[1.8rem] text-[#fff] font-medium'>{`Welcome, ${studentData?.name}`}</h2>
                 </div>
-                <div className='w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
-                    <div className='flex justify-between'>
+                <div className='w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2vw] ml-[2vw] mt-[2vh] rounded-xl p-4'>
+                    <div className='flex h-[3.5vh] justify-between'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Your Information</h2>
                         <Text className='ml-3 text-black' size={20}>{`${studentData?.residentialAddress != undefined ? 'Address : ' + studentData.residentialAddress : ""}`}</Text>
                     </div>
-                    <div className='flex'>
-                        <Avatar size={150} radius={'100%'} src={studentData?.profileImage} alt="it's me" />
-                        <ScrollArea w={'auto'}>
-                            <div className='flex p-3'>
-                                <div className='w-[25vw]'>
-                                    <StudentListItem values={[
-                                        { label: "Name", value: studentData?.name },
-                                        { label: "Gender", value: studentData?.gender },
-                                        { label: "FA Name", value: studentData?.facultyAdvisorName },
-                                    ]} />
+                    <div className='h-[17vh] flex flex-col overflow-auto'>
+                        <div className='flex'>
+                            <Avatar size={150} radius={'100%'} src={studentData?.profileImage} alt="it's me" />
+                            <ScrollArea w={'auto'}>
+                                <div className='flex p-3'>
+                                    <div className='w-[25vw]'>
+                                        <StudentListItem values={[
+                                            { label: "Name", value: studentData?.name },
+                                            { label: "Gender", value: studentData?.gender },
+                                            { label: "FA Name", value: studentData?.facultyAdvisorName },
+                                        ]} />
+                                    </div>
+                                    <div className='w-[25vw]'>
+                                        <StudentListItem values={[
+                                            { label: "Your Branch", value: studentData?.branch },
+                                            { label: "Reg No.", value: studentData?.regNo },
+                                            { label: "Facult Advisor", value: studentData?.facultyAdvisorEmail },
+                                        ]} />
+                                    </div>
+                                    <div className='w-[25vw]'>
+                                        <StudentListItem values={[
+                                            { label: "Phone", value: studentData?.phone },
+                                            { label: "Email", value: studentData?.email },
+                                            { label: "Father's Name", value: studentData?.fathersName },
+                                        ]} />
+                                    </div>
+                                    <div className='w-[25vw]'>
+                                        <StudentListItem values={[
+                                            { label: "Mother's Name", value: studentData?.mothersName },
+                                            { label: "Father's Email", value: studentData?.fathersEmail },
+                                            { label: "Father's Phone", value: studentData?.fathersPhone },
+                                        ]} />
+                                    </div>
+                                    <div className='w-[25vw]'>
+                                        <StudentListItem values={[
+                                            { label: "Mother's Email", value: studentData?.mothersEmail },
+                                            { label: "Mother's Phone", value: studentData?.mothersPhone },
+                                        ]} />
+                                    </div>
                                 </div>
-                                <div className='w-[25vw]'>
-                                    <StudentListItem values={[
-                                        { label: "Your Branch", value: studentData?.branch },
-                                        { label: "Reg No.", value: studentData?.regNo },
-                                        { label: "Facult Advisor", value: studentData?.facultyAdvisorEmail },
-                                    ]} />
-                                </div>
-                                <div className='w-[25vw]'>
-                                    <StudentListItem values={[
-                                        { label: "Phone", value: studentData?.phone },
-                                        { label: "Email", value: studentData?.email },
-                                        { label: "Father's Name", value: studentData?.fathersName },
-                                    ]} />
-                                </div>
-                                <div className='w-[25vw]'>
-                                    <StudentListItem values={[
-                                        { label: "Mother's Name", value: studentData?.mothersName },
-                                        { label: "Father's Email", value: studentData?.fathersEmail },
-                                        { label: "Father's Phone", value: studentData?.fathersPhone },
-                                    ]} />
-                                </div>
-                                <div className='w-[25vw]'>
-                                    <StudentListItem values={[
-                                        { label: "Mother's Email", value: studentData?.mothersEmail },
-                                        { label: "Mother's Phone", value: studentData?.mothersPhone },
-                                    ]} />
-                                </div>
-                            </div>
-                        </ScrollArea>
+                            </ScrollArea>
+                        </div>
                     </div>
                 </div>
                 <div className='w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
@@ -383,7 +386,7 @@ const StudentMain = () => {
                         {
                             activeOutpass == undefined ?
                                 <Button rightSection={<IconPlus size={14} />} onClick={(e)=>openCreateOutpass()}>New Outpass</Button> :
-                                <Button rightSection={<IconChevronsUpRight size={14} />}>Open</Button>
+                                <OpenCurrentOutpass data={activeOutpass} />
                         }
                     </div>
                     <div className='flex justify-center items-center'>

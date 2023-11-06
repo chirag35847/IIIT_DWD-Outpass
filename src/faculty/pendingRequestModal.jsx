@@ -5,24 +5,26 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import updateOutpassStatusByRoleAndAcceptance from '../firebase-helpers/outpass_updater'
 
-const PendingRequestModal = ({ data }) => {
-    console.log(data)
+const PendingRequestModal = ({ outpassData , teacherRole}) => {
     const [opened, { open, close }] = useDisclosure(false);
     const [outpass, setOutpass] = useState();
+    
+    const data = outpassData.data
 
     const fetchCurrentOutpass = useCallback(() => {
         const current = {
-            id: data.id,
             regNo: data.regNo,
             from: format(new Date(data.from), 'do LLL, yyyy'),
             to: format(new Date(data.to), 'do LLL, yyyy'),
-            reason: "Going Home",
+            reason: data.reason,
         }
         setOutpass(current)
     }, [data])
 
-    const [approve,setApprove] = useState();
+    const [approve,setApprove] = useState(false);
+    const [hasClicked,setHasClicked] = useState(false);
     const schema = z.object({
         remarks: z.string().refine(val => val.length > 0, { message: "Approval Remarks Cannot Be Empty" }),
         approval: z.string().refine(val => val.length > 0, { message: "Apprval Cannot be empty" })
@@ -35,8 +37,12 @@ const PendingRequestModal = ({ data }) => {
         }
     }, [opened])
 
-    const handleOutpass = useCallback((data) => {
-        console.log(data)
+    const handleOutpass = useCallback(async (thisdata) => {
+        console.log(thisdata)
+        let accept = thisdata.approval == 'approved' ? true : false;
+
+        await updateOutpassStatusByRoleAndAcceptance(teacherRole, accept, data.id, thisdata.remarks)
+        close()
     }, [])
 
     return (
@@ -58,8 +64,9 @@ const PendingRequestModal = ({ data }) => {
                                 <label className='text-[0.9rem]'>Approval</label>
                                 <div className="flex">
                                     <Checkbox
-                                        checked={approve}
+                                        checked={approve&&hasClicked}
                                         onChange={e=>{
+                                            setHasClicked(true)
                                             setValue('approval','approved')
                                             setApprove(true)
                                         }}
@@ -67,10 +74,11 @@ const PendingRequestModal = ({ data }) => {
                                         className="mr-2"
                                     />
                                     <Checkbox
-                                        checked={!approve}
+                                        checked={!approve&&hasClicked}
                                         defaultChecked
                                         label="Reject"
                                         onChange={e=>{
+                                            setHasClicked(true)
                                             setValue('approval','rejected')
                                             setApprove(false)
                                         }}
