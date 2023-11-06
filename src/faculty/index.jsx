@@ -15,6 +15,7 @@ import EditInformationModal from './EditInformationModal';
 import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
 import filterOutpass from './filter_outpass'
 import app from '../firebase'
+import { useLocation } from 'react-router-dom';
 
 const storage = getStorage(app);
 const db = getFirestore(app);
@@ -32,9 +33,12 @@ const FacultMain = () => {
         { value: "Warden", label: "Warden" }
     ]
 
+    const location = useLocation();
+    const receivedData = location.state;
+
     const currentFaculty = {
-        email: "chirag@iiitdwd.ac.in",
-        role: "Faculty"
+        email: receivedData.email,
+        role: receivedData.role
     }
 
     const schema = z.object({

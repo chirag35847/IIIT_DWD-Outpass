@@ -1,67 +1,31 @@
 import React, { useState } from 'react';
 import COVERIMAGE from './2021-07-27.jpg';
 import outpassListData from '../constants/fakeOutpass'
-import { getFirestore, collection, doc, updateDoc, getDocs, addDoc, writeBatch} from "firebase/firestore";
+import { getFirestore, collection, doc, updateDoc, getDoc, addDoc, writeBatch} from "firebase/firestore";
 import app from '../firebase'
 import emailjs from '@emailjs/browser'
+import { useNavigate } from 'react-router-dom';
 
 const db = getFirestore(app);
 
-const updateOutpassesWithDates = async () => {
+const fetchTeacherByEmail = async (email) => {
+  const facultyCollection = collection(db, "faculty");
+
   try {
-    const querySnapshot = await getDocs(collection(db, "outpass"));
-
-    const updates = [];
-
-    querySnapshot.forEach((doc) => {
-      const outpass = doc.data();
-      const { outpass_size } = outpass;
-
-      // Calculate dates based on outpass_size
-      const today = new Date();
-      let dateOfLeaving = new Date(today);
-      let dateOfReturning = new Date(today);
-
-      if (outpass_size) {
-        dateOfLeaving.setDate(today.getDate() + 11);
-        dateOfReturning.setDate(today.getDate() + 25);
-      } else {
-        dateOfLeaving.setDate(today.getDate() + 2);
-        dateOfReturning.setDate(today.getDate() + 5);
-      }
-
-      // Format dates as MM/DD/YYYY
-      const formattedDateOfLeaving = `${dateOfLeaving.getMonth() + 1}/${dateOfLeaving.getDate()}/${dateOfLeaving.getFullYear()}`;
-      const formattedDateOfReturning = `${dateOfReturning.getMonth() + 1}/${dateOfReturning.getDate()}/${dateOfReturning.getFullYear()}`;
-
-      // Add updates to the batch
-      updates.push({
-        id: doc.id,
-        date_of_leaving: formattedDateOfLeaving,
-        date_of_returning: formattedDateOfReturning,
-      });
-    });
-
-    // Create a batch to update all documents
-    const batch = writeBatch(db);
-
-    for (const update of updates) {
-      const docRef = doc(collection(db, "outpass"), update.id);
-      batch.update(docRef, {
-        date_of_leaving: update.date_of_leaving,
-        date_of_returning: update.date_of_returning,
-      });
+    const query = doc(facultyCollection, email);
+    const docSnap = await getDoc(query);
+    if (docSnap.exists()) {
+      const role = docSnap.data().role;
+      const teacherData = { email, role };
+      return teacherData;
+    } else {
+      return null;
     }
-
-    // Commit the batch to update all documents
-    await batch.commit();
-
-    console.log("Outpasses updated with date_of_leaving and date_of_returning fields.");
   } catch (error) {
-    console.error("Error updating outpasses: ", error);
+    console.error("Error fetching teacher document:", error);
+    return null;
   }
 };
-
 
 const colors = {
   primary: "#060606",
@@ -87,6 +51,13 @@ function LoginForm() {
   const [showOTPInput, setShowOTPInput] = useState(false);
   const [otp, setOTP] = useState(['', '', '', '']);
 
+  const [generatedOTP, setGeneratedOTP] = useState('');
+
+  const navigate = useNavigate();
+
+  // Function to generate a random string that matches a specific regex pattern
+
+
   const generateOTP = () => {
     const min = 1000; // Minimum 4-digit number
     const max = 9999; // Maximum 4-digit number
@@ -94,36 +65,32 @@ function LoginForm() {
     return otp;
   };
 
+  const sendEmail = (templateParams) => {
+    const serviceID = 'service_ia31v4m';
+    const templateID = 'template_tzfu265';
+    const userID = 'nCJm866AKCN_Onjn-';
+    
+    emailjs.send(serviceID, templateID, templateParams, userID)
+      .then(response => {
+        console.log('Email successfully sent!', response);
+      })
+      .catch(err => console.error('There has been an error. Here some thoughts on the error that occurred:', err));
+  };
+
   const handleEmailSubmit = async () => {
     if (email.endsWith('iiitdwd.ac.in')) {
-      const serviceId = 'service_ia31v4m';
-      const templateId = 'template_tzfu265';
-      const userId = 'nCJm866AKCN_Onjn-';
-
-      //from = user_name, user_email, message, subject
+      
       const otp = generateOTP();
+      setGeneratedOTP(otp.toString()); 
       let form = {
-        user_name: "Aniket",
-        user_email: email,
-        message: `<p>Your OTP is <strong>${otp}</strong>.</p>`,
-        subject: "Here is your OTP"
+        from_name: "Project_X",
+        to_name: "Aniket Raj",
+        message: `Your OTP is ${otp}`,
+        reply_to: email
       }
 
-      const sendEmail = (form) => {
-        return new Promise((resolve, reject) => {
-          emailjs.sendForm(serviceId, templateId, form, userId)
-            .then((result) => {
-              console.log(result.text);
-              resolve(result.text);
-            })
-            .catch((error) => {
-              console.log(error.text);
-              reject(error.text);
-          });
-        });
-      };
-
-      await sendEmail(form);
+      sendEmail(form);
+      console.log(otp)
       setShowOTPInput(true);
     } else {
       alert('Invalid email domain. Use an iiitdwd.ac.in email.');
@@ -136,27 +103,48 @@ function LoginForm() {
     setOTP(updatedOTP);
   };
 
-  const uploadOutpassesToFirestore = async (outpassList) => {
-    try {
-      for (const outpass of outpassList) {
-        const docRef = await addDoc(collection(db, "outpass"), outpass);
-        console.log("Document written with ID: ", docRef.id);
-      }
-      console.log("All outpasses uploaded to Firestore successfully.");
-    } catch (error) {
-      console.error("Error uploading outpasses to Firestore: ", error);
-    }
-  };
-
   const handleLogin = async () => {
     const enteredOTP = otp.join('');
-    if (enteredOTP === '1234') {
-      alert('Login successful!'); // Replace with your actual login logic
+    if (enteredOTP === generatedOTP) {
+      const emailPattern = /^(\d{2}[a-zA-Z]{3}\d{3})@iiitdwd.ac.in$/;
+
+      const routingPattern = /^[0-9]{2}[a-zA-Z]{3}[0-9]{3}$/;
+      const generateRoutingString = (pattern) => {
+        let routingString = '';
+        const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      
+        for (let i = 0; i < pattern.length; i++) {
+          if (pattern[i] === '0') {
+            routingString += characters[Math.floor(Math.random() * 10)];
+          } else if (pattern[i] === 'a') {
+            routingString += characters[Math.floor(Math.random() * 26) + 10];
+          }
+        }
+      
+        return routingString;
+      };
+      const routingString = generateRoutingString(routingPattern);
+
+      if (email.match(emailPattern)) {
+        // Student route
+        navigate(`/${routingString}/student?`, { state: email });
+      } else if (email === 'admin@example.com') { // Replace with your specific admin email
+        // Admin route
+        window.location.href = `/${routingString}/upload`;
+      } else {
+        // Faculty route
+        const facultyData = await fetchTeacherByEmail(email);
+        if (facultyData) {
+          // Redirect to faculty page with faculty data
+          navigate(`/${routingString}/faculty?`, { state: { email: email, role: facultyData.role } });
+        } else {
+          alert('Invalid email. Please try again.');
+        }
+      }
+
     } else {
       alert('Invalid OTP. Please try again.');
     }
-
-    updateOutpassesWithDates();
   };
 
   return (
