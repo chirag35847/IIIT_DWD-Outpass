@@ -10,7 +10,8 @@ import StudentListItem from './studentDataScroolItem';
 import { IconChevronsUpRight, IconPlus } from '@tabler/icons-react';
 import CurrentOutpass from './currentOutpass';
 import OutpassHistoryListItem from './outpassHistoryItem';
-import { doc, setDoc, getFirestore } from "firebase/firestore"; 
+import { doc, getDoc, setDoc, getFirestore, collection, addDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
+
 
 import { getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
 
@@ -206,7 +207,8 @@ const StudentMain = () => {
                     (snapshot.bytesTransferred / snapshot.totalBytes) * 100
                 );
                 console.log(progress);
-     
+    
+                //can be used in frontend for loading
                 // update progress
                 // setProgresspercent(progress);
             },
@@ -222,40 +224,95 @@ const StudentMain = () => {
             }
         );
         
-
-        
-
-        
-
-        //calling function here
-        // updateStudentDataByEmail(data.email, data);
         console.log(data);
-
-
-        
-
-
-
-        // upload the file to cloud
-        // get the link, find the studentid in db, and update the student information
-        // Do not touch anything else
-        // Write the API to send the data here
-        // use data object and profileImageFile object
         getStudentInformation()
 
         setValue('gender', "");
         setValue('bloodGroup', "");
         reset();
     }, [profileImageFile]);
+    
+    function getDaysBetweenDates(date1, date2) {
+        const firstDate = new Date(date1);
+        const secondDate = new Date(date2);
+      
+        // Calculate the time difference in milliseconds
+        const timeDifference = secondDate - firstDate;
+      
+        // Convert milliseconds to days
+        const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+      
+        return daysDifference;
+    }
+
+    async function updateOutpassFields(email, currentOutpass) {
+        const userRef = doc(db, "student", email);
+      
+        // Check if the document exists
+        // get outPassdata
+        // data comes in docSnapshot.data()
+        const docSnapshot = await getDoc(userRef, 'student', email) ;
+      
+        if (docSnapshot==="undefined") {
+          // If the document doesn't exist, create it with initial values
+          await setDoc(userRef,{
+            current_outpass: currentOutpass,
+            outpass_history: [currentOutpass]
+          });
+        } else {
+          // If the document exists, update the fields
+          const existingData = docSnapshot.data();
+          console.log(existingData);
+          const outpassHistory = existingData.outpass_history;
+          
+          // Add the current outpass to the history
+          outpassHistory.push(currentOutpass);
+          
+          // Update the fields
+          await updateDoc(userRef,{
+            current_outpass: currentOutpass,
+            outpass_history: outpassHistory
+          });
+        }
+      }
 
 
     const handleNewOutpass = useCallback(async (data)=>{
-        console.log(data)
-        try {
-            await setDoc(doc(db, "outpass", `${email ? email: "20bds063@iiitdwd.ac.in"}`), data);
-        } catch (error) {
-            console.error(`Error querying Firestore: ${error}`);
+        // Add a new document with a generated id.
+        const days = getDaysBetweenDates(data.checkInDate, data.checkout);
+
+        const newData ={
+            date_of_leaving: data.checkout,
+            date_of_returning: data.checkInDate,
+            email : studentData.email? studentData.email: null,
+            fatherName: studentData.fathersName?studentData.fathersName:null,
+            fatherPhoneNo: studentData.fathersPhone?studentData.fathersPhone:null,
+            motherName: studentData.mothersName?studentData.mothersName:null,
+            motherPhoneNo: studentData.mothersPhone?studentData.mothersPhone:null,
+            name: studentData.name?studentData.name:null,
+            outpass_size: null,
+            reason: data.reason,
+            remarks: [],
+            residentialAddress: studentData.residentialAddress?studentData.residentialAddress:null,
+            studentPhoneNo: studentData.phone?studentData.phone:null,
         }
+        if(days<=10){
+            newData["outpass_size"] = false;
+        } else {
+            newData["outpass_size"] = true;
+        }
+        newData["status"] = 'pending';
+
+
+        const docRef = await addDoc(collection(db, "outpass"), newData);
+        console.log("Document written with ID: ", docRef.id);
+
+        updateOutpassFields(studentData.email, docRef.id);
+
+        console.log(data)
+        console.log(newData);
+
+        
         // 
     },[])
 
