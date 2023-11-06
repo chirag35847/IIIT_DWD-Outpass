@@ -3,13 +3,8 @@ import React from 'react'
 import { useEffect, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
 
-import './assets/App.css'
-
-
 
 /*basic sign in is done*/
-
-
 
 export default function SignIn() {
 

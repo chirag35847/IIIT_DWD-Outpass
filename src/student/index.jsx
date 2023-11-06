@@ -1,21 +1,27 @@
 import { Avatar, Button, FileInput, Modal, ScrollArea, Space, Text, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import React, { useCallback, useEffect, useState } from 'react'
-import { z } from 'zod'
-import Select from 'react-select'
-import { useForm } from 'react-hook-form'
+import React, { useCallback, useEffect, useState } from 'react';
+import { z } from 'zod';
+import Select from 'react-select';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import StudentListItem from './studentDataScroolItem';
 import { IconChevronsUpRight, IconPlus } from '@tabler/icons-react';
 import CurrentOutpass from './currentOutpass';
 import OutpassHistoryListItem from './outpassHistoryItem';
-import { getFirestore } from 'firebase/firestore';
-import app from "../firebase"
+import { doc, getDoc, setDoc, getFirestore, collection, addDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
+
+
+import { getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
+
+import app from "../firebase";
 import OpenCurrentOutpass from './OpenCurrentOutpass';
 
 const StudentMain = () => {
     const db = getFirestore(app);
+    const storage = getStorage(app);
+    // const studentCollection = db.collection('student');
     const [studentData, setStudentData] = useState();
     const [opened, { open, close }] = useDisclosure(false);
     const [selectedGender, setSelectedGender] = useState();
@@ -24,6 +30,7 @@ const StudentMain = () => {
     const [activeOutpass, setActiveOutpass] = useState();
     const [outpassHistory, setOutpassHostory] = useState();
     const [openedCreateOutpass, { open:openCreateOutpass, close:closeCreateOutpass }] = useDisclosure(false);
+
 
     const genderOptions = [
         { value: 'Male', label: "Male" },
@@ -68,6 +75,9 @@ const StudentMain = () => {
     const {register:registerNew,setValue:setValueNew,handleSubmit:handleSubmitNew,reset:resetNew,formState:{errors:errorsNew}} = useForm({resolver:zodResolver(schemaNew)});
     const { register, setValue, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
+    
+    
+
     const getStudentInformation = useCallback(() => {
         // API to return the student information
         // 
@@ -95,19 +105,20 @@ const StudentMain = () => {
         }
 
         // API to fetch current outpass if it is there
-        // 
-        const currentOutPassData = {
-            id: '123456',
-            checkoutDate: "01/08/2002",
-            checkinDate: "08/08/2002",
-            outPassType: "lessThan10",
-            fa: 'done',
-            swc: 'pending',
-            warden: 'pending',
-            reason: "Going Home, For Family trip",
-        }
+        
+        
+        
+        // {
+        //     id: '123456',
+        //     checkoutDate: "01/08/2002",
+        //     checkinDate: "08/08/2002",
+        //     outPassType: "lessThan10",
+        //     fa: 'done',
+        //     swc: 'pending',
+        //     warden: 'pending',
+        //     reason: "Going Home, For Family trip",
+        // }
 
-        setActiveOutpass(currentOutPassData);
 
         // api to get outpassHistory
         const outpassHistory = [
@@ -153,6 +164,7 @@ const StudentMain = () => {
             }
         ]
         setOutpassHostory(outpassHistory);
+        
 
         setStudentData(data);
         if (data == undefined || data?.name == undefined) {
@@ -160,37 +172,178 @@ const StudentMain = () => {
         }
     }, [selectedGender, profileImageFile])
 
-    const handleSubmitData = useCallback((data) => {
+    //updatedetails function
+    async function updateStudentDataByEmail(email, updatedData) {
+        try {
+            await setDoc(doc(db, "student", `${email}`), updatedData);
+        } catch (error) {
+            console.error(`Error querying Firestore: ${error}`);
+        }
+    }
+
+    const handleSubmitData = useCallback (async (data) => {
         console.log('--------');
+        data = {
+            bloodGroup: data.bloodGroup,
+            dob: data.dob,
+            email: data.email,
+            fathersEmail: data.fathersEmail,
+            fathersName: data.fathersName,
+            fathersPhone: data.fathersPhone,
+            gender: data.gender,
+            mothersEmail: data.mothersEmail,
+            mothersName: data.mothersName,
+            mothersPhone: data.mothersPhone,
+            name: data.name,
+            phone: data.phone,
+            residentialAddress: data.residentialAddress,
+
+        }
+        
+        console.log(profileImageFile);  
+        //image upload handle
+        const storageRef = ref(storage, `/profilePhotos/${data.email}`); 
+        const uploadTask = uploadBytesResumable(storageRef, profileImageFile);
+        uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+                const progress = Math.round(
+                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                );
+                console.log(progress);
+    
+                //can be used in frontend for loading
+                // update progress
+                // setProgresspercent(progress);
+            },
+            (err) => console.log(err),
+            () => {
+                // download url
+                getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                    
+                    data["profile_photo_URL"] = url;
+                    updateStudentDataByEmail(data.email, data);
+
+                });
+            }
+        );
+        
         console.log(data);
-        console.log(profileImageFile)
+        getStudentInformation()
 
-        // upload the file to cloud
-        // get the link, find the studentid in db, and update the student information
-        // Do not touch anything else
-        // Write the API to send the data here 
-        // use data object and profileImageFile object
-
-        // getStudentInformation()
         setValue('gender', "");
-        setValue('bloodGroup', "")
-        reset()
-    }, [profileImageFile])
+        setValue('bloodGroup', "");
+        reset();
+    }, [profileImageFile]);
 
 
-    const handleNewOutpass = useCallback((data)=>{
+    
+    function getDaysBetweenDates(date1, date2) {
+        const firstDate = new Date(date1);
+        const secondDate = new Date(date2);
+      
+        // Calculate the time difference in milliseconds
+        const timeDifference = secondDate - firstDate;
+      
+        // Convert milliseconds to days
+        const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+      
+        return daysDifference;
+    }
+
+    async function updateOutpassFields(email, currentOutpass) {
+        const userRef = doc(db, "student", email);
+      
+        // Check if the document exists
+        // get outPassdata
+        // data comes in docSnapshot.data()
+        const docSnapshot = await getDoc(userRef, 'student', email);
+      
+        if (docSnapshot==="undefined") {
+          // If the document doesn't exist, create it with initial values
+          await setDoc(userRef,{
+            current_outpass: currentOutpass,
+            outpass_history: [currentOutpass]
+          });
+        } else {
+          // If the document exists, update the fields
+          const existingData = docSnapshot.data();
+          console.log(existingData);
+          const outpassHistory = existingData.outpass_history;
+          
+          // Add the current outpass to the history
+          outpassHistory.push(currentOutpass);
+          
+          // Update the fields
+          await updateDoc(userRef,{
+            current_outpass: currentOutpass,
+            outpass_history: outpassHistory
+          });
+        }
+      }
+
+
+    const handleNewOutpass = useCallback(async (data)=>{
+        // Add a new document with a generated id.
+        const days = getDaysBetweenDates(data.checkInDate, data.checkout);
+
+        const newData ={
+            date_of_leaving: data.checkout,
+            date_of_returning: data.checkInDate,
+            email : studentData.email? studentData.email: null,
+            fatherName: studentData.fathersName?studentData.fathersName:null,
+            fatherPhoneNo: studentData.fathersPhone?studentData.fathersPhone:null,
+            motherName: studentData.mothersName?studentData.mothersName:null,
+            motherPhoneNo: studentData.mothersPhone?studentData.mothersPhone:null,
+            name: studentData.name?studentData.name:null,
+            outpass_size: null,
+            reason: data.reason,
+            remarks: [],
+            residentialAddress: studentData.residentialAddress?studentData.residentialAddress:null,
+            studentPhoneNo: studentData.phone?studentData.phone:null,
+        }
+        if(days<=10){
+            newData["outpass_size"] = false;
+        } else {
+            newData["outpass_size"] = true;
+        }
+        newData["status"] = 'pending';
+
+
+        const docRef = await addDoc(collection(db, "outpass"), newData);
+        console.log("Document written with ID: ", docRef.id);
+
+        updateOutpassFields(studentData.email, docRef.id);
+
         console.log(data)
+        console.log(newData);
 
+        
         // 
     },[])
+    async function getOutpassDetails(data){
+        const studentRef = doc(db, "student", data.email);
+        const docSnapshot = await getDoc(studentRef, 'student', data.email);
+        const studentdata = docSnapshot.data();
+
+        const outpassRef = doc(db, "outpass", studentdata.current_outpass);
+        const outpassDoc = await getDoc(outpassRef, 'outpass', studentdata.current_outpass);
+        const currentOutPassData = outpassDoc.data();
+        setActiveOutpass(currentOutPassData);
+
+    }
 
     useEffect(() => {
         setValue('gender', "");
-        setValue('bloodGroup', "")
+        setValue('bloodGroup', "");
         getStudentInformation();
+        getOutpassDetails(studentData);
+        
     }, [])
 
     // console.log(openedCreateOutpass)
+
+    
 
     return (
         <>

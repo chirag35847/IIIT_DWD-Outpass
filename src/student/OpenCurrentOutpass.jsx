@@ -13,8 +13,8 @@ const OpenCurrentOutpass = ({ data }) => {
     console.log(data)
 
     const outPassData = {
-        from: format(new Date(data.checkoutDate), 'do LLL, yyyy'),
-        to: format(new Date(data.checkinDate), 'do LLL, yyyy'),
+        from: format(new Date(data.date_of_leaving), 'do LLL, yyyy'),
+        to: format(new Date(data.date_of_returning), 'do LLL, yyyy'),
         reason: data.reason,
     }
 

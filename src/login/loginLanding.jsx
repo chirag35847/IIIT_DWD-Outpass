@@ -2,9 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import SignIn from './loginForm'
 
-
-import './assets/App.css'
-
 export default function LandingPage() {
     return (
         <div className="text-center m-5-auto">
