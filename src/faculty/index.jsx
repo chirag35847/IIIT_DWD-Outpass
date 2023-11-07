@@ -15,7 +15,7 @@ import EditInformationModal from './EditInformationModal';
 import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
 import filterOutpass from './filter_outpass'
 import app from '../firebase'
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const storage = getStorage(app);
 const db = getFirestore(app);
@@ -35,6 +35,13 @@ const FacultMain = () => {
 
     const location = useLocation();
     const receivedData = location.state;
+
+    const routingPattern = /^[0-9]{2}[a-zA-Z]{3}[0-9]{3}$/;
+    const navigaterr = useNavigate();
+
+    // if(!routingPattern.test(receivedData.routingString)){
+    //     navigaterr('/HELLO')
+    // }
 
     const currentFaculty = {
         email: receivedData.email,
