@@ -1,4 +1,4 @@
-import { Avatar, Button, FileInput, Modal, ScrollArea, Space, Text, TextInput } from '@mantine/core';
+import { Avatar, Button, FileInput, Modal, ScrollArea, Space, Text, TextInput, LoadingOverlay } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import React, { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
@@ -12,9 +12,8 @@ import CurrentOutpass from './currentOutpass';
 import OutpassHistoryListItem from './outpassHistoryItem';
 import { doc, getDoc, setDoc, getFirestore, collection, addDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
 import { useLocation, useNavigate } from 'react-router-dom';
-
-
-import { getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
+import { getStorage, ref, getDownloadURL,uploadBytes} from "firebase/storage";
+import {differenceInDays} from 'date-fns'
 
 import app from "../firebase";
 import OpenCurrentOutpass from './OpenCurrentOutpass';
@@ -30,6 +29,7 @@ const StudentMain = () => {
     const [selectedBloodGroup, setSelectedBloodGroup] = useState();
     const [activeOutpass, setActiveOutpass] = useState();
     const [outpassHistory, setOutpassHostory] = useState();
+    const [loading,setLoading] = useState(false);
     const [openedCreateOutpass, { open:openCreateOutpass, close:closeCreateOutpass }] = useDisclosure(false);
     const location = useLocation();
     const receivedData = location.state;
@@ -59,7 +59,6 @@ const StudentMain = () => {
         gender: z.string().refine(val => val.length > 0, { message: "Please select a gender" }),
         dob: z.string().refine(val => val.length > 0, { message: "DOB cannot be empty" }),
         phone: z.string().refine(val => /[0-9+-]{10,15}$/.test(val), { message: "Please enter a valid phone" }),
-        email: z.string().refine(val => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(val), { message: "Please enter a valid email" }),
         fathersName: z.string().refine(val => val.length > 0, { message: "FathersName cannot be empty" }),
         mothersName: z.string().refine(val => val.length > 0, { message: "MothersName cannot be empty" }),
         fathersEmail: z.string().refine(val => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(val), { message: "Please enter a valid email" }),
@@ -80,21 +79,17 @@ const StudentMain = () => {
     const { register, setValue, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
     
-    
-
     const getStudentInformation = useCallback(async () => {
-        console.log('calling')
-        // API to return the student information
         const studentRef = doc(db, "student", email);
         const docSnapshot = await getDoc(studentRef);
         const data = docSnapshot.data();
-        console.log(data)
-        // data['branch'] = data?.email[3]=='d'?'DSAI':data?.email[3]=='e'?"ECE":"CSE"
-        // data['regNo'] = data?.email.substring(0,8)
-        console.log(data)
+        if(email){
+            data['branch'] = email[3]=='d'?'DSAI':email[3]=='e'?"ECE":"CSE"
+            data['regNo'] = email.substring(0,8)
+        }
         setStudentData(data);
 
-        const history = data.outpass_history!=undefined? await Promise.all(data.outpass_history.map(async(x)=>{
+        const history = data?.outpass_history!=undefined? await Promise.all(data.outpass_history.map(async(x)=>{
             const docRef = doc(db,'outpass',x)
             const docSnap = await getDoc(docRef)
             const data = docSnap.data();
@@ -107,92 +102,38 @@ const StudentMain = () => {
         }):[];
 
         setOutpassHostory(history);
-        console.log(data)
         if (data == undefined || data?.name == undefined) {
             open()
         }
-    }, [selectedGender, profileImageFile])
+    }, [email])
 
-    //updatedetails function
-    async function updateStudentDataByEmail(email, updatedData) {
-        try {
-            await setDoc(doc(db, "student", `${email}`), updatedData);
-        } catch (error) {
-            console.error(`Error querying Firestore: ${error}`);
-        }
-    }
+    const uploadStudentImage = useCallback(async()=>{
+        const storageRef = ref(storage, `/profilePhotos/${email}/${new Date().getDate()}`); 
+        await uploadBytes(storageRef, profileImageFile);
+        return await getDownloadURL(storageRef);
+    },[profileImageFile])
 
     const handleSubmitData = useCallback (async (data) => {
-        // console.log('--------');
-        const newdata = {
-            bloodGroup: data.bloodGroup,
-            dob: data.dob,
-            email: data.email,
-            fathersEmail: data.fathersEmail,
-            fathersName: data.fathersName,
-            fathersPhone: data.fathersPhone,
-            gender: data.gender,
-            mothersEmail: data.mothersEmail,
-            mothersName: data.mothersName,
-            mothersPhone: data.mothersPhone,
-            name: data.name,
-            phone: data.phone,
-            residentialAddress: data.residentialAddress,
+        setLoading(true)
+        if(profileImageFile){
+            data['profile_photo_URL'] = await uploadStudentImage()
+        }
+        const studentRef = doc(db,'student',email);
+        const dataSnap = await getDoc(studentRef);
+        if(dataSnap.exists()){
+            await updateDoc(studentRef,data);
+        }
+        else{
+            await setDoc(studentRef,data)
         }
         
-        // console.log(profileImageFile);  
-        //image upload handle
-        const storageRef = ref(storage, `/profilePhotos/${newdata.email}`); 
-        const uploadTask = uploadBytesResumable(storageRef, profileImageFile);
-        uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-                const progress = Math.round(
-                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                );
-                console.log(progress);
-    
-                //can be used in frontend for loading
-                // update progress
-                // setProgresspercent(progress);
-            },
-            (err) => console.log(err),
-            () => {
-                // download url
-                getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-                    
-                    newdata["profile_photo_URL"] = url;
-                    updateStudentDataByEmail(newdata.email, newdata);
-
-                });
-            }
-        );
-
-        const studentRef = doc(db,'student',email);
-        await updateDoc(studentRef,newdata)
-        
-
         setValue('gender', "");
         setValue('bloodGroup', "");
         reset();
         close();
+        setLoading(false);
         getStudentInformation()
-    }, [profileImageFile]);
-
-
-    
-    function getDaysBetweenDates(date1, date2) {
-        const firstDate = new Date(date1);
-        const secondDate = new Date(date2);
-      
-        // Calculate the time difference in milliseconds
-        const timeDifference = secondDate - firstDate;
-      
-        // Convert milliseconds to days
-        const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-      
-        return daysDifference;
-    }
+    }, [profileImageFile,email]);
 
     async function updateOutpassFields(email, currentOutpass) {
         const userRef = doc(db, "student", email);
@@ -230,46 +171,44 @@ const StudentMain = () => {
 
 
     const handleNewOutpass = useCallback(async (data)=>{
-        // Add a new document with a generated id.
-        const days = getDaysBetweenDates(data.checkout,data.checkInDate);
-        console.log(days)
-
+        const days = differenceInDays(new Date(data.checkInDate),new Date(data.checkout));
+        const fa = studentData.fa
         const newData ={
             date_of_leaving: data.checkout,
             date_of_returning: data.checkInDate,
-            email : studentData.email? studentData.email: null,
-            fatherName: studentData.fathersName?studentData.fathersName:null,
-            fatherPhoneNo: studentData.fathersPhone?studentData.fathersPhone:null,
-            motherName: studentData.mothersName?studentData.mothersName:null,
-            motherPhoneNo: studentData.mothersPhone?studentData.mothersPhone:null,
-            name: studentData.name?studentData.name:null,
-            outpass_size: null,
-            reason: data.reason,
-            remarks: [],
-            residentialAddress: studentData.residentialAddress?studentData.residentialAddress:null,
-            studentPhoneNo: studentData.phone?studentData.phone:null,
+            email
         }
-        if(days<=10){
-            newData["outpass_size"] = false;
-        } else {
-            newData["outpass_size"] = true;
-        }
+        newData['outpass_size'] = days<=10?false:true;
         newData["status"] = 'pending';
-        console.log(newData)
 
+        // Now attach this to fa's email
+        // const docRef = await addDoc(collection(db, "outpass"), newData);
+        // // console.log("Document written with ID: ", docRef.id);
 
-        const docRef = await addDoc(collection(db, "outpass"), newData);
-        // console.log("Document written with ID: ", docRef.id);
+        const docSnap =  await getDoc(doc(db,'student',email));
+        if (docSnap.exists()){
 
-        updateOutpassFields(studentData.email, docRef.id);
-        closeCreateOutpass()
+        }
+        else{
+            
+        }
+
+        // updateOutpassFields(studentData.email, docRef.id);
+        // closeCreateOutpass()
+
+        // const facultyDocRef = doc(db,'faculty',fa)
+        // const facultyDocSnap = await getDoc(facultyDocRef)
+        // const faData = facultyDocSnap.data()
+
+        // const 
+        // console.log()
 
         // console.log(data)
         // console.log(newData);
 
         
         // 
-    },[studentData])
+    },[studentData,email])
 
     async function getOutpassDetails(data){
         // console.log(data);
@@ -303,6 +242,7 @@ const StudentMain = () => {
 
     return (
         <>
+            <LoadingOverlay visible={loading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
             <div className='w-[100vw] flex flex-col items-center'>
                 <div className='w-[95vw] h-[8vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[3vh] rounded-xl flex justify-center items-center'>
                     <h2 className='text-[1.8rem] text-[#fff] font-medium'>{`Welcome, ${studentData?.name}`}</h2>
@@ -328,7 +268,7 @@ const StudentMain = () => {
                                         <StudentListItem values={[
                                             { label: "Your Branch", value: studentData?.branch },
                                             { label: "Reg No.", value: studentData?.regNo },
-                                            { label: "Facult Advisor", value: studentData?.facultyAdvisorEmail },
+                                            { label: "Facult Advisor", value: studentData?.fa },
                                         ]} />
                                     </div>
                                     <div className='w-[25vw]'>
@@ -438,11 +378,6 @@ const StudentMain = () => {
                                 <label className='text-[0.9rem]'>Phone Number</label>
                                 <TextInput placeholder='Enter your phone number' {...register('phone')} />
                                 {errors?.phone?.message && <small className='inline-block text-[#ff0000]'>{errors.phone.message}</small>}
-                            </div>
-                            <div className='flex flex-col mb-3'>
-                                <label className='text-[0.9rem]'>Email</label>
-                                <TextInput placeholder='Enter Your Email' {...register('email')} />
-                                {errors?.email?.message && <small className='inline-block text-[#ff0000]'>{errors.email.message}</small>}
                             </div>
                             <div className='flex flex-col mb-3'>
                                 <label className='text-[0.9rem]'>Father's Name</label>
