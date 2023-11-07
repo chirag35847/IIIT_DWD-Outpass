@@ -15,7 +15,7 @@ function App() {
     <div>
       <Routes>
         <Route path="/" element={<SignIn/>}/>
-        <Route path="/:routingString/upload" element={<Upload/>}/>
+        <Route path="/:u/upload" element={<Upload/>}/>
         <Route path="/:routingString/student" element={<StudentMain/>}/>
         <Route path="/:routingString/faculty" element={<FacultMain/>}/>
         <Route path="*" element={<NotFound />} />

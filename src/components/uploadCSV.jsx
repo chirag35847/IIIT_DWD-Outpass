@@ -2,6 +2,7 @@ import React from 'react'
 import Papa from 'papaparse'
 import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import app from "../firebase"
+import { Text } from '@mantine/core'
 
 function App() {
 
@@ -41,40 +42,40 @@ function App() {
                     const db = getFirestore(app);
                     data.map(async x => {
                         // check if the current faculty exists,
-                        const facultyDocRef = doc(db,'faculty',`${x.faculty}`)
+                        const facultyDocRef = doc(db, 'faculty', `${x.faculty}`)
                         const docSnap = await getDoc(facultyDocRef);
 
-                        if(docSnap.exists()){
-                            const updatedFaculty = await updateDoc(facultyDocRef,{
-                                role:x.role,
-                                mentees:x.mentees
+                        if (docSnap.exists()) {
+                            const updatedFaculty = await updateDoc(facultyDocRef, {
+                                role: x.role,
+                                mentees: x.mentees
                             })
                         }
-                        else{
+                        else {
                             const docData = {
-                                email:x.faculty,
-                                mentees:x.mentees,
-                                role:x.role
+                                email: x.faculty,
+                                mentees: x.mentees,
+                                role: x.role
                             }
 
-                            const createdDoc = await setDoc(facultyDocRef,docData)
+                            const createdDoc = await setDoc(facultyDocRef, docData)
                         }
 
-                        x.mentees.map(async y=>{
+                        x.mentees.map(async y => {
                             // console.log(y)
-                            const studentDocRef = doc(db,'student',y);
+                            const studentDocRef = doc(db, 'student', y);
                             const studentDocSnap = await getDoc(studentDocRef);
-                            if(studentDocSnap.exists()){
-                                const updatedStudent = await updateDoc(studentDocRef,{
-                                    fa:x.faculty,
+                            if (studentDocSnap.exists()) {
+                                const updatedStudent = await updateDoc(studentDocRef, {
+                                    fa: x.faculty,
                                 })
                             }
-                            else{
+                            else {
                                 const docData = {
-                                    fa:x.faculty
+                                    fa: x.faculty
                                 }
 
-                                const createdDoc = await setDoc(studentDocRef,docData)
+                                const createdDoc = await setDoc(studentDocRef, docData)
                             }
                         })
                     })
@@ -86,14 +87,24 @@ function App() {
     }
 
     return (
-        <div>
-            <input
-                type='file'
-                name='file'
-                accept='.csv'
-                onChange={handleFile}
-                style={{ display: "block", margin: "10px auto" }}>
-            </input>
+        <div className='w-[100vw] flex flex-col items-center'>
+            <div className='w-[95vw] h-[8vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[3vh] rounded-xl flex justify-center items-center'>
+                <h2 className='text-[1.8rem] text-[#fff] font-medium'>{`Welcome, Admin`}</h2>
+            </div>
+            <div className='w-[95vw] flex flex-col justify-around h-[24vh] bg-[#000000]/[.40] mr-[2vw] ml-[2vw] mt-[2vh] rounded-xl p-4'>
+                <div className='flex h-[3.5vh] justify-between'>
+                    <Text className='ml-3 text-black' size={20}>{`Please Select a CSV and we will convert it to records`}</Text>
+                </div>
+                <div className='flex'>
+                    <input
+                        type='file'
+                        name='file'
+                        accept='.csv'
+                        onChange={handleFile}
+                        style={{ display: "block", margin: "10px auto" }}>
+                    </input>
+                </div>
+            </div>
         </div>
     )
 }
