@@ -187,7 +187,7 @@ const StudentMain = () => {
     }
 
     const handleSubmitData = useCallback (async (data) => {
-        console.log('--------');
+        // console.log('--------');
         const newdata = {
             bloodGroup: data.bloodGroup,
             dob: data.dob,
@@ -204,7 +204,7 @@ const StudentMain = () => {
             residentialAddress: data.residentialAddress,
         }
         
-        console.log(profileImageFile);  
+        // console.log(profileImageFile);  
         //image upload handle
         const storageRef = ref(storage, `/profilePhotos/${newdata.email}`); 
         const uploadTask = uploadBytesResumable(storageRef, profileImageFile);
@@ -232,7 +232,7 @@ const StudentMain = () => {
             }
         );
         
-        console.log(newdata);
+        // console.log(newdata);
         
 
         setValue('gender', "");
@@ -264,7 +264,7 @@ const StudentMain = () => {
         // get outPassdata
         // data comes in docSnapshot.data()
         const docSnapshot = await getDoc(userRef);
-        console.log(docSnapshot);
+        // console.log(docSnapshot);
         if (docSnapshot.data().outpass_history===undefined) {
           // If the document doesn't exist, create it with initial values
           await updateDoc(userRef,{
@@ -274,7 +274,7 @@ const StudentMain = () => {
         } else {
           // If the document exists, update the fields
           const existingData = docSnapshot.data();
-          console.log(existingData);
+        //   console.log(existingData);
           const outpassHistory = existingData.outpass_history;
           
           // Add the current outpass to the history
@@ -324,27 +324,27 @@ const StudentMain = () => {
 
         updateOutpassFields(studentData.email, docRef.id);
 
-        console.log(data)
-        console.log(newData);
+        // console.log(data)
+        // console.log(newData);
 
         
         // 
     },[])
 
     async function getOutpassDetails(data){
-        console.log(data);
+        // console.log(data);
         const studentRef = doc(db, "student", data);
         const docSnapshot = await getDoc(studentRef);
-        console.log(docSnapshot)
+        // console.log(docSnapshot)
         const studentdata = docSnapshot.data();
-        console.log(studentData);
+        // console.log(studentData);
 
         const outpassRef = doc(db, "outpass", studentdata.current_outpass);
         const outpassDoc = await getDoc(outpassRef);
         const currentOutPassData = outpassDoc.data();
-        console.log(currentOutPassData);
-        console.log('-------');
-        console.log(currentOutPassData);
+        // console.log(currentOutPassData);
+        // console.log('-------');
+        // console.log(currentOutPassData);
         setActiveOutpass(currentOutPassData);
 
     }
