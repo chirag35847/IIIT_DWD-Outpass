@@ -11,6 +11,7 @@ import { IconChevronsUpRight, IconPlus } from '@tabler/icons-react';
 import CurrentOutpass from './currentOutpass';
 import OutpassHistoryListItem from './outpassHistoryItem';
 import { doc, getDoc, setDoc, getFirestore, collection, addDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
+import { useLocation, useNavigate } from 'react-router-dom';
 
 
 import { getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
@@ -30,7 +31,9 @@ const StudentMain = () => {
     const [activeOutpass, setActiveOutpass] = useState();
     const [outpassHistory, setOutpassHostory] = useState();
     const [openedCreateOutpass, { open:openCreateOutpass, close:closeCreateOutpass }] = useDisclosure(false);
-    const email = "20bds008@iiitdwd.ac.in";
+    const location = useLocation();
+    const receivedData = location.state;
+    const email = receivedData.email;
 
 
     const genderOptions = [

@@ -53,10 +53,7 @@ function LoginForm() {
 
   const [generatedOTP, setGeneratedOTP] = useState('');
 
-  const navigate = useNavigate();
-
-  // Function to generate a random string that matches a specific regex pattern
-
+  const navigaterr = useNavigate();
 
   const generateOTP = () => {
     const min = 1000; // Minimum 4-digit number
@@ -83,10 +80,10 @@ function LoginForm() {
       const otp = generateOTP();
       setGeneratedOTP(otp.toString()); 
       let form = {
-        from_name: "Project_X",
-        to_name: "Aniket Raj",
+        user_email: email,
+        user_name: email.substring(0,8),
         message: `Your OTP is ${otp}`,
-        reply_to: email
+        subject: "Auth OTP"
       }
 
       sendEmail(form);
@@ -127,16 +124,16 @@ function LoginForm() {
 
       if (email.match(emailPattern)) {
         // Student route
-        navigate(`/${routingString}/student?`, { state: email });
-      } else if (email === 'admin@example.com') { // Replace with your specific admin email
+        navigaterr('/student', { state: { email: email, routingString: routingString } });
+      } else if (email === 'admin@iiitdwd.ac.in') { // Replace with your specific admin email
         // Admin route
-        window.location.href = `/${routingString}/upload`;
+        navigaterr('/upload', { state: { email: email, routingString: routingString } });
       } else {
         // Faculty route
         const facultyData = await fetchTeacherByEmail(email);
         if (facultyData) {
           // Redirect to faculty page with faculty data
-          navigate(`/${routingString}/faculty?`, { state: { email: email, role: facultyData.role } });
+          navigaterr('/faculty', { state: { email: email, role: facultyData.role, routingString: routingString } });
         } else {
           alert('Invalid email. Please try again.');
         }

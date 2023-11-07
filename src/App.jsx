@@ -15,17 +15,17 @@ function App() {
     <div>
       <Routes>
         <Route path="/" element={<SignIn/>}/>
-        <Route path="/:u/upload" element={<Upload/>}/>
-        <Route path="/:routingString/student" element={<StudentMain/>}/>
-        <Route path="/:routingString/faculty" element={<FacultMain/>}/>
+        <Route path="/upload" element={<Upload/>}/>
+        <Route path="/student" element={<StudentMain/>}/>
+        <Route path="/faculty" element={<FacultMain/>}/>
         <Route path="*" element={<NotFound />} />
-        <Route render={({ match }) => {
+        {/* <Route render={({ match }) => {
           const routingPattern = /^[0-9]{2}[a-zA-Z]{3}[0-9]{3}$/;
           if (!routingPattern.test(match.params.routingString)) {
             return <Redirect to="*" />;
           }
           return null;
-        }} />
+        }} /> */}
       </Routes>
     </div>
   );
