@@ -2,7 +2,23 @@
 
 
 
-export const outPassPdf = () => {
+export const outPassPdf = (data) => {
+
+
+
+    const email = data.email;
+    var rollno = email.substring(0, 8);
+    var code = email.substring(2,5);
+    var branch ='';
+    if(code == 'bds'){
+        branch = "DSAI"
+    }else if(code == 'bec'){
+        branch = "ECE"
+    } else {
+        branch = "CSE"
+    }
+
+
 
 
     return {
@@ -21,18 +37,18 @@ export const outPassPdf = () => {
             },
             {
                 text: [
-                    'Name:\t\t','erisrfasidh','\n',
-                    'Roll No.:\t\t','weruhfoi','\n',
-                    'Branch:\t\t','efbiaoic','\n',
-                    'Contact No.:\t\t','ehsbfci','\n',
-                    'Date of Leaving:\t\t','ewuhfucoiwerjo', '\t\t\t\t\t\t\t\t',
-                    'Date of Return:\t\t','ewfrewc', ' \t\t\t\t\t\t\t\t',
-                    'Reason:\t\t','erwfhbrewi','\n',
+                    'Name:\t\t',`${data?.name}`,'\n',
+                    'Roll No.:\t\t',`${rollno}`,'\n',
+                    'Branch:\t\t',`${branch}`,'\n',
+                    'Contact No.:\t\t',`${data?.studentPhoneNo}`,'\n',
+                    'Date of Leaving:\t\t',`${data?.date_of_leaving}`, '\n',
+                    'Date of Return:\t\t',`${data?.date_of_returning}`, ' \n',
+                    'Reason:\t\t',`${data.reason}`,'\n',
                 ],
                 style: 'bigger'
             },
-            { qr: 'outpass._id', foreground: 'blue', background: 'white', alignment: 'center', fit:120 },
-            {text: 'Scan me to Verify', alignment: 'center'}
+            // { qr: 'outpass._id', foreground: 'blue', background: 'white', alignment: 'center', fit:120 },
+            // {text: 'Scan me to Verify', alignment: 'center'}
             
         ],
         styles: {

@@ -30,7 +30,7 @@ const CurrentOutpass = ({ activeOutpass }) => {
                 </div>  
                 <Divider color='black' my="sm" labelPosition='center' label='generated' className='m-0 w-[10vw] ' />
                 {
-                    activeOutpass.status == 'facultu_approved' ?
+                    activeOutpass.status == 'faculty_approved' ?
                         <div className='flex flex-col justify-center items-center'>
                             <IconCircleCheckFilled />
                             <Text>FA Approved</Text>
