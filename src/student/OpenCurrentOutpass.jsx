@@ -8,24 +8,25 @@ import pdfFonts from "pdfmake/build/vfs_fonts";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 import { outPassPdf } from './outpass';
 
-const OpenCurrentOutpass = ({ data }) => {
+const OpenCurrentOutpass = (data) => {
     const [opened, { open, close }] = useDisclosure(false);
     console.log(data)
 
     const outPassData = {
-        from: format(new Date(data.date_of_leaving), 'do LLL, yyyy'),
-        to: format(new Date(data.date_of_returning), 'do LLL, yyyy'),
-        reason: data.reason,
+        from: data?.data?.date_of_leaving,
+        to: data?.data?.date_of_returning,
+        reason: data?.data?.reason,
     }
+    console.log(outPassData);
 
     const createAndDownloadPdf = () =>{
-        console.log(outPassPdf({},{}));
-        return pdfMake.createPdf(outPassPdf(), 'Outpass').download();
+        console.log(outPassPdf(data?.data));
+        return pdfMake.createPdf(outPassPdf(data?.data), 'Outpass').download();
     }
 
     return (
         <>
-            <Button rightSection={<IconChevronsUpRight size={14} />} onClick={open}>Open</Button>
+            <Button rightsection={<IconChevronsUpRight size={14} />} onClick={open}>Open</Button>
             <Modal opened={opened} onClose={close} title="Current Outpass">
                 <div className='flex flex-col'>
                     <label className='text-[0.9rem]'>Reason of going</label>
@@ -35,7 +36,7 @@ const OpenCurrentOutpass = ({ data }) => {
                     <label className='text-[0.9rem] mt-2'>Going Till</label>
                     <TextInput value={outPassData?.to} readOnly />
                     {
-                        (data.fa == 'done' && data.swc == 'done' && data.warden == 'done') ?
+                        (data.status == 'approved') ?
                             <>
                                 <div className='h-auto w-auto flex flex-col justify-center items-center mt-5'>
                                     <MantineText>Request Approved, Download Outpass</MantineText>

@@ -30,6 +30,7 @@ const StudentMain = () => {
     const [activeOutpass, setActiveOutpass] = useState();
     const [outpassHistory, setOutpassHostory] = useState();
     const [openedCreateOutpass, { open:openCreateOutpass, close:closeCreateOutpass }] = useDisclosure(false);
+    const email = "20bds016@iiitdwd.ac.in";
 
 
     const genderOptions = [
@@ -78,31 +79,36 @@ const StudentMain = () => {
     
     
 
-    const getStudentInformation = useCallback(() => {
+    const getStudentInformation = useCallback(async () => {
         // API to return the student information
-        // 
+        const studentRef = doc(db, "student", email);
+        const docSnapshot = await getDoc(studentRef);
+        const data = docSnapshot.data();
+        setStudentData(data);
 
+    
+        
         // const data = undefined
-        const data = {
-            name: 'Chirag Mittal',
-            gender: "Male",
-            dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
-            phone: "+91-8527288876",
-            email: "20bds016@iiitdwd.ac.in",
-            fathersName: "RamKumar Mittal",
-            mothersName: "Sangeeta Mittal",
-            fathersEmail: "ram801132@gmail.com",
-            fathersPhone: "+91-8011325410",
-            mothersEmail: "sangeeta@gmail.com",
-            mothersPhone: "+91-7002341587",
-            profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-            residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
-            bloodGroup: "O+ve",
-            facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
-            facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
-            branch: "Data Science And AI",   // can get from email
-            regNo: "20bds016"   // can get from email
-        }
+        // const data = {
+        //     name: 'Chirag Mittal',
+        //     gender: "Male",
+        //     dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
+        //     phone: "+91-8527288876",
+        //     email: "20bds016@iiitdwd.ac.in",
+        //     fathersName: "RamKumar Mittal",
+        //     mothersName: "Sangeeta Mittal",
+        //     fathersEmail: "ram801132@gmail.com",
+        //     fathersPhone: "+91-8011325410",
+        //     mothersEmail: "sangeeta@gmail.com",
+        //     mothersPhone: "+91-7002341587",
+        //     profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+        //     residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
+        //     bloodGroup: "O+ve",
+        //     facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
+        //     facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
+        //     branch: "Data Science And AI",   // can get from email
+        //     regNo: "20bds016"   // can get from email
+        // }
 
         // API to fetch current outpass if it is there
         
@@ -121,52 +127,51 @@ const StudentMain = () => {
 
 
         // api to get outpassHistory
-        const outpassHistory = [
-            {
-                id: '1',
-                checkoutDate: "01/08/2002",
-                checkinDate: "08/08/2002",
-                outPassType: "lessThan10",
-                reason: "Going Home, For Family trip",
-                verdict: 'rejected',
-                rejectedReason: "Incorrect details found"
-            },
-            {
-                id: '2',
-                checkoutDate: "01/08/2002",
-                checkinDate: "08/08/2002",
-                outPassType: "lessThan10",
-                reason: "Going Home, For Family trip",
-                verdict: 'checked-in',
-                outDate: '01/08/2002',
-                inDate: '08/08/2002',
-            },
-            {
-                id: '3',
-                checkoutDate: "01/08/2002",
-                checkinDate: "08/08/2002",
-                outPassType: "lessThan10",
-                reason: "Going Home, For Family trip",
-                verdict: 'checked-in',
-                outDate: '01/08/2002',
-                inDate: '08/08/2002',
-            },
-            {
-                id: '4',
-                checkoutDate: "01/08/2002",
-                checkinDate: "08/08/2002",
-                outPassType: "lessThan10",
-                reason: "Going Home, For Family trip",
-                verdict: 'rejected',
-                outDate: '01/08/2002',
-                inDate: '08/08/2002',
-                rejectedReason: "Incorrect details found"
-            }
-        ]
+        // const outpassHistory = [
+        //     {
+        //         id: '1',
+        //         checkoutDate: "01/08/2002",
+        //         checkinDate: "08/08/2002",
+        //         outPassType: "lessThan10",
+        //         reason: "Going Home, For Family trip",
+        //         verdict: 'rejected',
+        //         rejectedReason: "Incorrect details found"
+        //     },
+        //     {
+        //         id: '2',
+        //         checkoutDate: "01/08/2002",
+        //         checkinDate: "08/08/2002",
+        //         outPassType: "lessThan10",
+        //         reason: "Going Home, For Family trip",
+        //         verdict: 'checked-in',
+        //         outDate: '01/08/2002',
+        //         inDate: '08/08/2002',
+        //     },
+        //     {
+        //         id: '3',
+        //         checkoutDate: "01/08/2002",
+        //         checkinDate: "08/08/2002",
+        //         outPassType: "lessThan10",
+        //         reason: "Going Home, For Family trip",
+        //         verdict: 'checked-in',
+        //         outDate: '01/08/2002',
+        //         inDate: '08/08/2002',
+        //     },
+        //     {
+        //         id: '4',
+        //         checkoutDate: "01/08/2002",
+        //         checkinDate: "08/08/2002",
+        //         outPassType: "lessThan10",
+        //         reason: "Going Home, For Family trip",
+        //         verdict: 'rejected',
+        //         outDate: '01/08/2002',
+        //         inDate: '08/08/2002',
+        //         rejectedReason: "Incorrect details found"
+        //     }
+        // ]
         setOutpassHostory(outpassHistory);
         
 
-        setStudentData(data);
         if (data == undefined || data?.name == undefined) {
             open()
         }
@@ -183,7 +188,7 @@ const StudentMain = () => {
 
     const handleSubmitData = useCallback (async (data) => {
         console.log('--------');
-        data = {
+        const newdata = {
             bloodGroup: data.bloodGroup,
             dob: data.dob,
             email: data.email,
@@ -197,12 +202,11 @@ const StudentMain = () => {
             name: data.name,
             phone: data.phone,
             residentialAddress: data.residentialAddress,
-
         }
         
         console.log(profileImageFile);  
         //image upload handle
-        const storageRef = ref(storage, `/profilePhotos/${data.email}`); 
+        const storageRef = ref(storage, `/profilePhotos/${newdata.email}`); 
         const uploadTask = uploadBytesResumable(storageRef, profileImageFile);
         uploadTask.on(
             "state_changed",
@@ -221,19 +225,21 @@ const StudentMain = () => {
                 // download url
                 getDownloadURL(uploadTask.snapshot.ref).then((url) => {
                     
-                    data["profile_photo_URL"] = url;
-                    updateStudentDataByEmail(data.email, data);
+                    newdata["profile_photo_URL"] = url;
+                    updateStudentDataByEmail(newdata.email, newdata);
 
                 });
             }
         );
         
-        console.log(data);
-        getStudentInformation()
+        console.log(newdata);
+        
 
         setValue('gender', "");
         setValue('bloodGroup', "");
         reset();
+        close();
+        getStudentInformation()
     }, [profileImageFile]);
 
 
@@ -257,11 +263,11 @@ const StudentMain = () => {
         // Check if the document exists
         // get outPassdata
         // data comes in docSnapshot.data()
-        const docSnapshot = await getDoc(userRef, 'student', email);
-      
-        if (docSnapshot==="undefined") {
+        const docSnapshot = await getDoc(userRef);
+        console.log(docSnapshot);
+        if (docSnapshot.data().outpass_history===undefined) {
           // If the document doesn't exist, create it with initial values
-          await setDoc(userRef,{
+          await updateDoc(userRef,{
             current_outpass: currentOutpass,
             outpass_history: [currentOutpass]
           });
@@ -280,6 +286,9 @@ const StudentMain = () => {
             outpass_history: outpassHistory
           });
         }
+        closeCreateOutpass();
+        getOutpassDetails(email);
+        
       }
 
 
@@ -321,23 +330,30 @@ const StudentMain = () => {
         
         // 
     },[])
+
     async function getOutpassDetails(data){
-        const studentRef = doc(db, "student", data.email);
-        const docSnapshot = await getDoc(studentRef, 'student', data.email);
+        console.log(data);
+        const studentRef = doc(db, "student", data);
+        const docSnapshot = await getDoc(studentRef);
+        console.log(docSnapshot)
         const studentdata = docSnapshot.data();
+        console.log(studentData);
 
         const outpassRef = doc(db, "outpass", studentdata.current_outpass);
-        const outpassDoc = await getDoc(outpassRef, 'outpass', studentdata.current_outpass);
+        const outpassDoc = await getDoc(outpassRef);
         const currentOutPassData = outpassDoc.data();
+        console.log(currentOutPassData);
+        console.log('-------');
+        console.log(currentOutPassData);
         setActiveOutpass(currentOutPassData);
 
     }
 
     useEffect(() => {
-        setValue('gender', "");
+        setValue('gender', ""); 
         setValue('bloodGroup', "");
         getStudentInformation();
-        getOutpassDetails(studentData);
+        getOutpassDetails(email);
         
     }, [])
 
@@ -404,7 +420,7 @@ const StudentMain = () => {
                     <div className='flex justify-between'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Active Outpass</h2>
                         {
-                            activeOutpass == undefined ?
+                            activeOutpass?.date_of_leaving==undefined || new Date( activeOutpass?.date_of_leaving ) < new Date()?
                                 <Button rightSection={<IconPlus size={14} />} onClick={(e)=>openCreateOutpass()}>New Outpass</Button> :
                                 <OpenCurrentOutpass data={activeOutpass} />
                         }
