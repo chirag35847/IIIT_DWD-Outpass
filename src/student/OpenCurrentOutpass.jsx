@@ -10,7 +10,7 @@ import { outPassPdf } from './outpass';
 
 const OpenCurrentOutpass = (data) => {
     const [opened, { open, close }] = useDisclosure(false);
-    console.log(data)
+    // console.log(data?.data)
 
     const outPassData = {
         from: data?.data?.date_of_leaving,

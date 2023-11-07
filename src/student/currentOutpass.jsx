@@ -1,7 +1,8 @@
-import { Divider, Text } from '@mantine/core'
-import { IconCircleCheckFilled, IconCircleDotted } from '@tabler/icons-react'
+import { Divider, ScrollArea, Text } from '@mantine/core'
+import { IconCircleCheckFilled, IconCircleDotted, IconCircleX } from '@tabler/icons-react'
 import React, { useState } from 'react'
 import app from "../firebase";
+import { format } from 'date-fns'
 
 const CurrentOutpass = ({ activeOutpass }) => {
     // const db = getFirestore(app);
@@ -16,69 +17,34 @@ const CurrentOutpass = ({ activeOutpass }) => {
     // }
 
 
-    
-    
+
+
     console.log(activeOutpass)
-    const x=""
+    const x = ""
     x.toUpperCase
     return (
-        <div className='flex w-[80%] h-auto p-8 justify-between'>
-            <div className='flex items-center'>
-                <div className='flex flex-col justify-center items-center'>
-                    <IconCircleCheckFilled />
-                    <Text>Requested</Text>
-                </div>  
-                <Divider color='black' my="sm" labelPosition='center' label='generated' className='m-0 w-[10vw] ' />
-                {
-                    activeOutpass.status == 'faculty_approved' ?
-                        <div className='flex flex-col justify-center items-center'>
-                            <IconCircleCheckFilled />
-                            <Text>FA Approved</Text>
-                        </div> :
-                        <div className='flex flex-col justify-center items-center'>
-                            <IconCircleDotted />
-                            <Text>FA Pending</Text>
-                        </div>
-                }
-                <Divider color='black' my="sm" labelPosition='center' label={activeOutpass.fa == 'done' ? (activeOutpass.outPassType != 'lessThan10' ? "Sent to SWC" : "Sent to Warden") : 'Waiting for FA'} className='m-0 w-[10vw]' />
-                {
-                    activeOutpass.outpass_size == false ?
-                        <></> :
-
-                        activeOutpass.status == 'swc_approved' ?
-                            <div className='flex'>
-                                <div className='flex flex-col justify-center items-center'>
-                                    <IconCircleCheckFilled />
-                                    <Text>SWC Approved</Text>
-                                </div>
-                                <Divider color='black' my="sm" labelPosition='center' label='Sent to Warden' className='m-0 w-[10vw]' />
-                            </div> :
-                            <div className='flex'>
-                                <div className='flex flex-col justify-center items-center'>
-                                    <IconCircleDotted />
-                                    <Text>SWC Pending</Text>
-                                </div>
-                                <Divider color='black' my="sm" labelPosition='center' label='Waiting for SWC' className='m-0 w-[10vw]' />
-                            </div>
-
-                }
-                {
-                    activeOutpass.status == 'approved' && (activeOutpass.outpass_size==false || activeOutpass.status=='approved') ?
-                    <div className='flex flex-col justify-center items-center'>
-                        <IconCircleCheckFilled />
-                        <Text>Warden Approved</Text>
-                    </div> :
-                    <div className='flex flex-col justify-center items-center'>
-                        <IconCircleDotted />
-                        <Text>Warden waiting</Text>
-                    </div>
-                }
-            </div>
-            <div className='flex flex-col'>
-                <Text>{activeOutpass.outpass_size==false?'Less Than 10 Days':'More Than 10 Days'}</Text>
-                <Text>{`Checkout Date : ${activeOutpass.date_of_leaving}`}</Text>
-                <Text>{`CheckIn Date : ${activeOutpass.date_of_returning}`}</Text>
-                <Text>{activeOutpass.reason}</Text>
+        <div className='flex justify-between overflow-auto'>
+            <div className='w-[100%]'>
+                <div className='flex justify-around'>
+                    <p className='text-[.9rem]'>Outpass Status : </p>
+                    <p className='text-[.9rem]'>{activeOutpass.status}</p>
+                </div>
+                <div className='flex justify-around'>
+                    <p className='text-[.9rem]'>Date of Leaving : </p>
+                    <p className='text-[.9rem]'>{format(new Date(activeOutpass.date_of_leaving), 'do LLL, yyyy')}</p>
+                </div>
+                <div className='flex justify-around'>
+                    <p className='text-[.9rem]'>Date of Returning : </p>
+                    <p className='text-[.9rem]'>{format(new Date(activeOutpass.date_of_returning), 'do LLL, yyyy')}</p>
+                </div>
+                <div className='flex justify-around'>
+                    <p className='text-[.9rem]'>Outpass Size : </p>
+                    <p className='text-[.9rem]'>{activeOutpass.outpass_size?"More Than 10 Days":"Less Than 10 Days"}</p>
+                </div>
+                <div className='flex justify-around'>
+                    <p className='text-[.9rem]'>Reason For Going : </p>
+                    <p className='text-[.9rem]'>{activeOutpass.reason}</p>
+                </div>
             </div>
         </div>
     )

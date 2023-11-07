@@ -84,94 +84,11 @@ const StudentMain = () => {
         const studentRef = doc(db, "student", email);
         const docSnapshot = await getDoc(studentRef);
         const data = docSnapshot.data();
+        console.log(data)
+        data['branch'] = data.email[3]=='d'?'DSAI':data.email[3]=='e'?"ECE":"CSE"
+        data['regNo'] = data.email.substring(0,8)
         setStudentData(data);
-
-    
-        
-        // const data = undefined
-        // const data = {
-        //     name: 'Chirag Mittal',
-        //     gender: "Male",
-        //     dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
-        //     phone: "+91-8527288876",
-        //     email: "20bds016@iiitdwd.ac.in",
-        //     fathersName: "RamKumar Mittal",
-        //     mothersName: "Sangeeta Mittal",
-        //     fathersEmail: "ram801132@gmail.com",
-        //     fathersPhone: "+91-8011325410",
-        //     mothersEmail: "sangeeta@gmail.com",
-        //     mothersPhone: "+91-7002341587",
-        //     profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-        //     residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
-        //     bloodGroup: "O+ve",
-        //     facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
-        //     facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
-        //     branch: "Data Science And AI",   // can get from email
-        //     regNo: "20bds016"   // can get from email
-        // }
-
-        // API to fetch current outpass if it is there
-        
-        
-        
-        // {
-        //     id: '123456',
-        //     checkoutDate: "01/08/2002",
-        //     checkinDate: "08/08/2002",
-        //     outPassType: "lessThan10",
-        //     fa: 'done',
-        //     swc: 'pending',
-        //     warden: 'pending',
-        //     reason: "Going Home, For Family trip",
-        // }
-
-
-        // api to get outpassHistory
-        // const outpassHistory = [
-        //     {
-        //         id: '1',
-        //         checkoutDate: "01/08/2002",
-        //         checkinDate: "08/08/2002",
-        //         outPassType: "lessThan10",
-        //         reason: "Going Home, For Family trip",
-        //         verdict: 'rejected',
-        //         rejectedReason: "Incorrect details found"
-        //     },
-        //     {
-        //         id: '2',
-        //         checkoutDate: "01/08/2002",
-        //         checkinDate: "08/08/2002",
-        //         outPassType: "lessThan10",
-        //         reason: "Going Home, For Family trip",
-        //         verdict: 'checked-in',
-        //         outDate: '01/08/2002',
-        //         inDate: '08/08/2002',
-        //     },
-        //     {
-        //         id: '3',
-        //         checkoutDate: "01/08/2002",
-        //         checkinDate: "08/08/2002",
-        //         outPassType: "lessThan10",
-        //         reason: "Going Home, For Family trip",
-        //         verdict: 'checked-in',
-        //         outDate: '01/08/2002',
-        //         inDate: '08/08/2002',
-        //     },
-        //     {
-        //         id: '4',
-        //         checkoutDate: "01/08/2002",
-        //         checkinDate: "08/08/2002",
-        //         outPassType: "lessThan10",
-        //         reason: "Going Home, For Family trip",
-        //         verdict: 'rejected',
-        //         outDate: '01/08/2002',
-        //         inDate: '08/08/2002',
-        //         rejectedReason: "Incorrect details found"
-        //     }
-        // ]
         setOutpassHostory(outpassHistory);
-        
-
         if (data == undefined || data?.name == undefined) {
             open()
         }
@@ -294,7 +211,8 @@ const StudentMain = () => {
 
     const handleNewOutpass = useCallback(async (data)=>{
         // Add a new document with a generated id.
-        const days = getDaysBetweenDates(data.checkInDate, data.checkout);
+        const days = getDaysBetweenDates(data.checkout,data.checkInDate);
+        console.log(days)
 
         const newData ={
             date_of_leaving: data.checkout,
@@ -317,19 +235,21 @@ const StudentMain = () => {
             newData["outpass_size"] = true;
         }
         newData["status"] = 'pending';
+        console.log(newData)
 
 
         const docRef = await addDoc(collection(db, "outpass"), newData);
-        console.log("Document written with ID: ", docRef.id);
+        // console.log("Document written with ID: ", docRef.id);
 
         updateOutpassFields(studentData.email, docRef.id);
+        closeCreateOutpass()
 
         // console.log(data)
         // console.log(newData);
 
         
         // 
-    },[])
+    },[studentData])
 
     async function getOutpassDetails(data){
         // console.log(data);
@@ -374,7 +294,7 @@ const StudentMain = () => {
                     </div>
                     <div className='h-[17vh] flex flex-col overflow-auto'>
                         <div className='flex'>
-                            <Avatar size={150} radius={'100%'} src={studentData?.profileImage} alt="it's me" />
+                            <Avatar size={150} radius={'100%'} src={studentData?.profile_photo_URL} alt="it's me" />
                             <ScrollArea w={'auto'}>
                                 <div className='flex p-3'>
                                     <div className='w-[25vw]'>
@@ -417,15 +337,15 @@ const StudentMain = () => {
                     </div>
                 </div>
                 <div className='w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between h-[23%]'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Active Outpass</h2>
                         {
-                            activeOutpass?.date_of_leaving==undefined || new Date( activeOutpass?.date_of_leaving ) < new Date()?
+                            activeOutpass == undefined?
                                 <Button rightSection={<IconPlus size={14} />} onClick={(e)=>openCreateOutpass()}>New Outpass</Button> :
                                 <OpenCurrentOutpass data={activeOutpass} />
                         }
                     </div>
-                    <div className='flex justify-center items-center'>
+                    <div className='h-[75%]'>
                         {
                             activeOutpass == undefined ?
                                 <Text size={20} className='text-black'>You Don't have an active outpass</Text> :
@@ -465,7 +385,7 @@ const StudentMain = () => {
                             </div>
                         </ScrollArea>
                         <div className='flex justify-end w-[100%] mt-5'>
-                            <input type="submit" className="bg-[#5C5CFF] w-full inline-block text-center p-2 text-[#fff] border border-solid border-[#43B28A] rounded-xl" value={"Add Profile"} />
+                            <input type="submit" className="bg-[#5C5CFF] w-full inline-block text-center p-2 text-[#fff] border border-solid border-[#43B28A] rounded-xl" value={"Create Outpass"} />
                         </div>
                     </div>
                 </form>
