@@ -84,11 +84,24 @@ const StudentMain = () => {
         const studentRef = doc(db, "student", email);
         const docSnapshot = await getDoc(studentRef);
         const data = docSnapshot.data();
-        console.log(data)
+        // console.log(data)
         data['branch'] = data.email[3]=='d'?'DSAI':data.email[3]=='e'?"ECE":"CSE"
         data['regNo'] = data.email.substring(0,8)
         setStudentData(data);
-        setOutpassHostory(outpassHistory);
+
+        const history = await Promise.all(data.outpass_history.map(async(x)=>{
+            const docRef = doc(db,'outpass',x)
+            const docSnap = await getDoc(docRef)
+            const data = docSnap.data();
+            return {
+                current:data.current_outpass==x,
+                data:data
+            }
+        })).then(x=>{
+            return x
+        })
+
+        setOutpassHostory(history);
         if (data == undefined || data?.name == undefined) {
             open()
         }
