@@ -21,7 +21,6 @@ import OpenCurrentOutpass from './OpenCurrentOutpass';
 const StudentMain = () => {
     const db = getFirestore(app);
     const storage = getStorage(app);
-    // const studentCollection = db.collection('student');
     const [studentData, setStudentData] = useState();
     const [opened, { open, close }] = useDisclosure(false);
     const [selectedGender, setSelectedGender] = useState();
@@ -94,8 +93,7 @@ const StudentMain = () => {
             const docSnap = await getDoc(docRef)
             const data = docSnap.data();
             return {
-                current:data.current_outpass==x,
-                data:data
+                data
             }
         })).then(x=>{
             return x
@@ -135,110 +133,63 @@ const StudentMain = () => {
         getStudentInformation()
     }, [profileImageFile,email]);
 
-    async function updateOutpassFields(email, currentOutpass) {
-        const userRef = doc(db, "student", email);
-      
-        // Check if the document exists
-        // get outPassdata
-        // data comes in docSnapshot.data()
-        const docSnapshot = await getDoc(userRef);
-        // console.log(docSnapshot);
-        if (docSnapshot.data().outpass_history===undefined) {
-          // If the document doesn't exist, create it with initial values
-          await updateDoc(userRef,{
-            current_outpass: currentOutpass,
-            outpass_history: [currentOutpass]
-          });
-        } else {
-          // If the document exists, update the fields
-          const existingData = docSnapshot.data();
-        //   console.log(existingData);
-          const outpassHistory = existingData.outpass_history;
-          
-          // Add the current outpass to the history
-          outpassHistory.push(currentOutpass);
-          
-          // Update the fields
-          await updateDoc(userRef,{
-            current_outpass: currentOutpass,
-            outpass_history: outpassHistory
-          });
-        }
-        closeCreateOutpass();
-        getOutpassDetails(email);
-        
-      }
-
-
     const handleNewOutpass = useCallback(async (data)=>{
         const days = differenceInDays(new Date(data.checkInDate),new Date(data.checkout));
         const fa = studentData.fa
         const newData ={
             date_of_leaving: data.checkout,
             date_of_returning: data.checkInDate,
-            email
+            email,
+            reason: data.reason
         }
         newData['outpass_size'] = days<=10?false:true;
         newData["status"] = 'pending';
 
-        // Now attach this to fa's email
-        // const docRef = await addDoc(collection(db, "outpass"), newData);
-        // // console.log("Document written with ID: ", docRef.id);
-
         const docSnap =  await getDoc(doc(db,'student',email));
         if (docSnap.exists()){
-
+            const data = docSnap.data();
+            if(data?.fa){
+                
+                const resp = await addDoc(collection(db,'outpass'),newData)
+                if(data?.outpass_history){
+                    const updatedStudent = await updateDoc(doc(db,'student',email),{
+                        outpass_history:arrayUnion(resp.id)
+                    })
+                }
+                else{
+                    const updatedFaculty = await updateDoc(doc(db,'student',email),{
+                        outpass_history:[resp.id]
+                    })
+                }
+                const facultyDoc = await getDoc(doc(db,'faculty',fa));
+                const facultyData = facultyDoc.data()
+                if(facultyData?.outpasses){
+                    const updatedFaculty = await updateDoc(doc(db,'faculty',data.fa),{
+                        outpasses:arrayUnion(resp.id)
+                    })
+                }
+                else{
+                    const updatedFaculty = await updateDoc(doc(db,'faculty',data.fa),{
+                        outpasses:[resp.id]
+                    })
+                }
+            }
+            else{
+                alert("Looks like you dont have a FA assigned, Contact Admin")
+            }
         }
         else{
-            
+            alert("Looks like you dont have a FA assigned, Contact Admin")
         }
-
-        // updateOutpassFields(studentData.email, docRef.id);
-        // closeCreateOutpass()
-
-        // const facultyDocRef = doc(db,'faculty',fa)
-        // const facultyDocSnap = await getDoc(facultyDocRef)
-        // const faData = facultyDocSnap.data()
-
-        // const 
-        // console.log()
-
-        // console.log(data)
-        // console.log(newData);
-
-        
-        // 
+        closeCreateOutpass()
+        getStudentInformation()
     },[studentData,email])
-
-    async function getOutpassDetails(data){
-        // console.log(data);
-        const studentRef = doc(db, "student", data);
-        const docSnapshot = await getDoc(studentRef);
-        // console.log(docSnapshot)
-        const studentdata = docSnapshot.data();
-        // console.log(studentData);
-
-        const outpassRef = doc(db, "outpass", studentdata.current_outpass);
-        const outpassDoc = await getDoc(outpassRef);
-        const currentOutPassData = outpassDoc.data();
-        // console.log(currentOutPassData);
-        // console.log('-------');
-        // console.log(currentOutPassData);
-        setActiveOutpass(currentOutPassData);
-
-    }
 
     useEffect(() => {
         setValue('gender', ""); 
         setValue('bloodGroup', "");
         getStudentInformation();
-        getOutpassDetails(email);
-        
     }, [])
-
-    // console.log(openedCreateOutpass)
-
-    
 
     return (
         <>
@@ -296,32 +247,21 @@ const StudentMain = () => {
                         </div>
                     </div>
                 </div>
-                <div className='w-[95vw] h-[24vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
-                    <div className='flex justify-between h-[23%]'>
-                        <h2 className='text-[1rem] text-[#fff] font-medium'>Active Outpass</h2>
-                        {
-                            activeOutpass == undefined || activeOutpass.status.split('_')[1]=='rejected'?
-                                <Button rightSection={<IconPlus size={14} />} onClick={(e)=>openCreateOutpass()}>New Outpass</Button> :
-                                <OpenCurrentOutpass data={activeOutpass} />
-                        }
+                <div className='w-[95vw] h-[56.4vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
+                    <div className='flex justify-between h-[10%]'>
+                        <h2 className='text-[1rem] text-[#fff] font-medium'>Outpass History</h2>
+                        <Button rightSection={<IconPlus size={14} />} onClick={(e)=>openCreateOutpass()}>New Outpass</Button>
                     </div>
-                    <div className='h-[75%]'>
-                        {
-                            activeOutpass == undefined ?
-                                <Text size={20} className='text-black'>You Don't have an active outpass</Text> :
-                                <CurrentOutpass activeOutpass={activeOutpass} />
-                        }
-                    </div>
-                </div>
-                <div className='w-[95vw] h-[32.4vh] bg-[#000000]/[.40] mr-[2.5vw] ml-[2.5vw] mt-[2.2vh] rounded-xl p-4'>
-                    <h2 className='text-[1rem] text-[#fff] font-medium'>Outpass History</h2>
-                    <ScrollArea h={'27vh'}>
-                        {outpassHistory != undefined &&
+                    <div className='h-[90%] flex flex-col overflow-auto'>
+                        {outpassHistory != undefined && outpassHistory.length!=0 ?
                             outpassHistory.map((x, i) => {
                                 return <OutpassHistoryListItem itemData={x} key={i} />
-                            })
+                            }):
+                            <div className='flex h-full w-full justify-center items-center'>
+                                <Text>Looks Like you Dont have outpasses</Text>
+                            </div>
                         }
-                    </ScrollArea>
+                    </div>
                 </div>
             </div>
             <Modal size={'xl'} className='rouneded-xl' opened={openedCreateOutpass} onClose={closeCreateOutpass} title="Add Information">

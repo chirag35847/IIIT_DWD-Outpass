@@ -8,14 +8,14 @@ import pdfFonts from "pdfmake/build/vfs_fonts";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 import { outPassPdf } from './outpass';
 
-const OpenCurrentOutpass = (data) => {
+const OpenCurrentOutpass = ({data}) => {
     const [opened, { open, close }] = useDisclosure(false);
     // console.log(data?.data)
 
     const outPassData = {
-        from: data?.data?.date_of_leaving,
-        to: data?.data?.date_of_returning,
-        reason: data?.data?.reason,
+        from:data.data.date_of_leaving,
+        to: data.data.date_of_returning,
+        reason: data.data.reason,
     }
     console.log(outPassData);
 
@@ -26,7 +26,7 @@ const OpenCurrentOutpass = (data) => {
 
     return (
         <>
-            <Button rightsection={<IconChevronsUpRight size={14} />} onClick={open}>Open</Button>
+            <Button onClick={open}>Open</Button>
             <Modal opened={opened} onClose={close} title="Current Outpass">
                 <div className='flex flex-col'>
                     <label className='text-[0.9rem]'>Reason of going</label>
