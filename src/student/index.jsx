@@ -30,7 +30,7 @@ const StudentMain = () => {
     const [activeOutpass, setActiveOutpass] = useState();
     const [outpassHistory, setOutpassHostory] = useState();
     const [openedCreateOutpass, { open:openCreateOutpass, close:closeCreateOutpass }] = useDisclosure(false);
-    const email = "20bds016@iiitdwd.ac.in";
+    const email = "20bds008@iiitdwd.ac.in";
 
 
     const genderOptions = [
@@ -80,16 +80,18 @@ const StudentMain = () => {
     
 
     const getStudentInformation = useCallback(async () => {
+        console.log('calling')
         // API to return the student information
         const studentRef = doc(db, "student", email);
         const docSnapshot = await getDoc(studentRef);
         const data = docSnapshot.data();
-        // console.log(data)
-        data['branch'] = data.email[3]=='d'?'DSAI':data.email[3]=='e'?"ECE":"CSE"
-        data['regNo'] = data.email.substring(0,8)
+        console.log(data)
+        // data['branch'] = data?.email[3]=='d'?'DSAI':data?.email[3]=='e'?"ECE":"CSE"
+        // data['regNo'] = data?.email.substring(0,8)
+        console.log(data)
         setStudentData(data);
 
-        const history = await Promise.all(data.outpass_history.map(async(x)=>{
+        const history = data.outpass_history!=undefined? await Promise.all(data.outpass_history.map(async(x)=>{
             const docRef = doc(db,'outpass',x)
             const docSnap = await getDoc(docRef)
             const data = docSnap.data();
@@ -99,9 +101,10 @@ const StudentMain = () => {
             }
         })).then(x=>{
             return x
-        })
+        }):[];
 
         setOutpassHostory(history);
+        console.log(data)
         if (data == undefined || data?.name == undefined) {
             open()
         }
@@ -161,8 +164,9 @@ const StudentMain = () => {
                 });
             }
         );
-        
-        // console.log(newdata);
+
+        const studentRef = doc(db,'student',email);
+        await updateDoc(studentRef,newdata)
         
 
         setValue('gender', "");
