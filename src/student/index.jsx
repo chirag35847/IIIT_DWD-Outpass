@@ -353,7 +353,7 @@ const StudentMain = () => {
                     <div className='flex justify-between h-[23%]'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Active Outpass</h2>
                         {
-                            activeOutpass == undefined?
+                            activeOutpass == undefined || activeOutpass.status.split('_')[1]=='rejected'?
                                 <Button rightSection={<IconPlus size={14} />} onClick={(e)=>openCreateOutpass()}>New Outpass</Button> :
                                 <OpenCurrentOutpass data={activeOutpass} />
                         }
