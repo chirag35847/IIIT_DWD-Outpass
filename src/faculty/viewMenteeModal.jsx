@@ -1,34 +1,42 @@
+import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
 import { Avatar, Button, Modal, ScrollArea, TextInput, Textarea } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks';
 import { format } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react'
+import app from '../firebase'
 
-const ViewMenteeModal = ({ data }) => {
+const db = getFirestore(app);
+const ViewMenteeModal = ({ data, facultyData }) => {
     const [opened, { open, close }] = useDisclosure(false);
     const [student, setStudent] = useState();
+    const gotData = data
+    console.log(gotData)
+    
 
-    const fetchStudent = useCallback(() => {
+    const fetchStudent = useCallback(async() => {
         if (opened) {
-            // API to get student information based on data.id
+            const studentDoc=await getDoc(doc(db,'student',`${gotData.regNo}@iiitdwd.ac.in`));
+            const docData = studentDoc.data();
+            console.log(docData)
             const data = {
-                name: 'Chirag Mittal',
-                gender: "Male",
-                dob: '01/08/2002',         // In this case the API should return in format DD/MM/YYYY
-                phone: "+91-8527288876",
-                email: "20bds016@iiitdwd.ac.in",
-                fathersName: "RamKumar Mittal",
-                mothersName: "Sangeeta Mittal",
-                fathersEmail: "ram801132@gmail.com",
-                fathersPhone: "+91-8011325410",
-                mothersEmail: "sangeeta@gmail.com",
-                mothersPhone: "+91-7002341587",
-                profileImage: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                residentialAddress: "Somewhere On Earth, On Some Street, At Some House",
-                bloodGroup: "O+ve",
-                facultyAdvisorEmail: "professor@iiitdwd.ac.in",   // does not require ti be entered by student
-                facultyAdvisorName: "Dr. Professor Prof",    // does not require ti be entered by student
-                branch: "Data Science And AI",   // can get from email
-                regNo: "20bds016"   // can get from email
+                name: docData?.name,
+                gender: docData?.gender,
+                dob: docData?.dob,         // In this case the API should return in format DD/MM/YYYY
+                phone: docData?.phone,
+                email: docData?.email,
+                fathersName: docData?.fathersName,
+                mothersName: docData?.mothersName,
+                fathersEmail: docData?.fathersEmail,
+                fathersPhone: docData?.fathersPhone,
+                mothersEmail: docData?.fathersEmail,
+                mothersPhone: docData?.mothersPhone,
+                profileImage: docData?.profile_photo_URL,
+                residentialAddress: docData?.residentialAddress,
+                bloodGroup: docData?.bloodGroup,
+                facultyAdvisorEmail: facultyData?.email,   // does not require ti be entered by student
+                facultyAdvisorName: facultyData?.name,    // does not require ti be entered by student
+                branch: docData.email[3]=='d'?'DSAI':docData.email[3]=='e'?"ECE":"CSE",   // can get from email
+                regNo: gotData.regNo   // can get from email
             }
             setStudent(data)
         }

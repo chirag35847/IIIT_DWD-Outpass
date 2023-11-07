@@ -246,9 +246,9 @@ const FacultMain = () => {
                             {
                                 pendingRequests.map((x, i) => {
                                     return (
-                                        <div key={i} className='rounded-xl flex justify-between bg-[#2E2EFF]/[.50] w-auto h-[4.5vh] p-1 m-2'>
+                                        <div key={i} className='rounded-xl flex justify-between items-center bg-[#94e5ff] w-auto h-[4.5vh] p-1 m-2'>
                                             <Text size={15} color='black'>{x.data.regNo}</Text>
-                                            <PendingRequestModal outpassData={x} teacherRole={currentFaculty.role} />
+                                            <PendingRequestModal facultyData={facultyData}  outpassData={x} teacherRole={currentFaculty.role} />
                                         </div>
                                     )
                                 })
@@ -269,9 +269,9 @@ const FacultMain = () => {
                             {
                                 rejectedRequests.map((x, i) => {
                                     return (
-                                        <div key={i} className='rounded-xl flex justify-between bg-[#ff0000]/[.50] w-auto h-[4.5vh] p-1 m-2'>
+                                        <div key={i} className='rounded-xl flex justify-between items-center bg-[#FF7F7F] w-auto h-[4.5vh] p-1 m-2'>
                                             <Text size={15} color='black'>{x.data.regNo}</Text>
-                                            <RejectedRequestsModal outpassData={x} teacherName={facultyData.name} />
+                                            <RejectedRequestsModal facultyData={facultyData} outpassData={x} teacherName={facultyData.name} />
                                         </div>
                                     )
                                 })
@@ -292,9 +292,9 @@ const FacultMain = () => {
                             {
                                 grantedRequests.map((x, i) => {
                                     return (
-                                        <div key={i} className='rounded-xl flex justify-between bg-[#0FFF50]/[.50] w-auto h-[4.5vh] p-1 m-2'>
+                                        <div key={i} className='rounded-xl flex justify-between items-center bg-[#90EE90] w-auto h-[4.5vh] p-1 m-2'>
                                             <Text size={15} color='black'>{x.data.regNo}</Text>
-                                            <GrantedRequestsModal outpassData={x} />
+                                            <GrantedRequestsModal facultyData={facultyData} outpassData={x} />
                                         </div>
                                     )
                                 })
@@ -312,17 +312,17 @@ const FacultMain = () => {
                     <div className='h-[12%]'>
                         <h2 className='text-[1rem] text-[#fff] font-medium'>Your Mentees</h2>
                     </div>
-                    <div className='flex flex-col justify-between overflow-auto h-[82%]'>
+                    <div className='flex flex-col overflow-auto h-[82%]'>
                         {
                             mentees.map((x, i) => {
                                 return (
-                                    <div key={i} className='rounded-xl flex justify-between bg-[#ADD8E6] w-auto h-[4.5vh] p-1 m-2'>
+                                    <div key={i} className='rounded-xl flex justify-between items-center bg-[#ADD8E6] w-auto h-[4.5vh] p-1 m-2'>
                                         <div className='flex justify-between'>
                                             <Text size={15} color='black'>{x.name}</Text>
                                             <span style={{ margin: "4px" }}></span>
                                             <Text size={15} color='black'>{x.regNo}</Text>
                                         </div>
-                                        <ViewMenteeModal data={x} />
+                                        <ViewMenteeModal data={x} facultyData={facultyData} />
                                     </div>
                                 )
                             })

@@ -6,8 +6,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import updateOutpassStatusByRoleAndAcceptance from '../firebase-helpers/outpass_updater'
+import ViewMenteeModal from './viewMenteeModal';
 
-const PendingRequestModal = ({ outpassData , teacherRole}) => {
+const PendingRequestModal = ({facultyData, outpassData , teacherRole}) => {
     const [opened, { open, close }] = useDisclosure(false);
     const [outpass, setOutpass] = useState();
     
@@ -45,12 +46,21 @@ const PendingRequestModal = ({ outpassData , teacherRole}) => {
         close()
     }, [])
 
+    console.log(outpassData)
+
     return (
         <>
             <Modal opened={opened} onClose={close} title="Pending Request">
                 <div className='flex flex-col'>
                     <label className='text-[0.9rem]'>Student RegNo</label>
-                    <TextInput value={outpass?.regNo} readOnly />
+                    <div className='w-[100%] flex justify-between'>
+                        <div className='w-[70%]'>
+                            <TextInput value={outpass?.regNo} readOnly />
+                        </div>
+                        <div className='bg-[#0000FF] rounded-md'>
+                            <ViewMenteeModal facultyData={facultyData} data={outpassData.data} />
+                        </div>
+                    </div>
                     <label className='text-[0.9rem] mt-2'>Going From</label>
                     <TextInput value={outpass?.from} readOnly />
                     <label className='text-[0.9rem] mt-2'>Going Till</label>

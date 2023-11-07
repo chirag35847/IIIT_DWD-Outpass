@@ -115,6 +115,7 @@ const StudentMain = () => {
         setLoading(true)
         if(profileImageFile){
             data['profile_photo_URL'] = await uploadStudentImage()
+            data['email']=email
         }
         const studentRef = doc(db,'student',email);
         const dataSnap = await getDoc(studentRef);

@@ -28,7 +28,14 @@ const GrantedRequestsModal = ({ outpassData }) => {
       <Modal opened={opened} onClose={close} title="Approved Request">
         <div className='flex flex-col'>
           <label className='text-[0.9rem]'>Student RegNo</label>
-          <TextInput value={outpass?.regNo} readOnly />
+          <div className='w-[100%] flex justify-between'>
+            <div className='w-[70%]'>
+              <TextInput value={outpass?.regNo} readOnly />
+            </div>
+            <div className='bg-[#0000FF] rounded-md'>
+              <ViewMenteeModal facultyData={facultyData} data={outpassData.data} />
+            </div>
+          </div>
           <label className='text-[0.9rem] mt-2'>Going From</label>
           <TextInput value={outpass?.from} readOnly />
           <label className='text-[0.9rem] mt-2'>Going Till</label>
